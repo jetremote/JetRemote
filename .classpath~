@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="PiWC/src"/>
+	<classpathentry kind="lib" path="PiWC/libs/remotevmlauncher-client-1.0-20140103.103630-5.jar"/>
+	<classpathentry kind="lib" path="PiWC/libs/junit.jar"/>
+	<classpathentry kind="lib" path="PiWC/libs/slf4j-api-1.7.10.jar"/>
+	<classpathentry kind="lib" path="PiWC/libs/slf4j-log4j12-1.7.10.jar"/>
+	<classpathentry kind="lib" path="PiWC/libs/log4j.jar"/>
+	<classpathentry kind="lib" path="PiWC/libs/slf4j-nop-1.7.10.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.fx.ide.jdt.core.JAVAFX_CONTAINER"/>
+	<classpathentry kind="lib" path="/home/ubuntu/Documentos/PiWC/XBJL-1.0.1/xbjlib-1.0.1.jar"/>
+	<classpathentry kind="lib" path="/home/ubuntu/Documentos/PiWC/XBJL-1.0.1/extra-libs/rxtx-2.2.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/usr/lib/jni"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
