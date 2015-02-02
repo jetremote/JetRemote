@@ -41,7 +41,7 @@ Jet Remote es una aplicación multiplataforma que permite desconectar embarcacio
 
 ====
 <h1>Desarrolladores</h1>
-PiWC utiliza el framework [RemoteVM de Abstract Horizon](http://remotevm.abstracthorizon.org/index.html) para ejecutar y depurar la aplicación directamente sobre la raspberry Pi. Para saber más sobre RemoteVM y su uso visite los [Tutoriales](http://remotevm.abstracthorizon.org/tutorials.html)
+JetRemote utiliza el framework [RemoteVM de Abstract Horizon](http://remotevm.abstracthorizon.org/index.html) para ejecutar y depurar la aplicación directamente sobre la raspberry Pi. Para saber más sobre RemoteVM y su uso visite los [Tutoriales](http://remotevm.abstracthorizon.org/tutorials.html)
 
 
 Si descubres algún error, deseas aportar alguna sugerencia o solicitar una funcionalidad, por favor utiliza la [página de issues de Github](https://github.com/linuxgc/PiWC/issues) para avisarnos.
