@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-	<project name="PiWC" default="do-deploy" basedir="."  xmlns:fx="javafx:com.sun.javafx.tools.ant">
+	<project name="JetRemote" default="do-deploy" basedir="."  xmlns:fx="javafx:com.sun.javafx.tools.ant">
 	<target name="init-fx-tasks">
 		<path id="fxant">
 			<filelist>
@@ -20,50 +20,50 @@
 		<mkdir dir="externalLibs" />
 		
 		<copy todir="externalLibs">
-			<fileset dir="/home/ubuntu/Documentos/PiWC/XBJL-1.0.1">
-				<filename name="xbjlib-1.0.1.jar"/>	
-			</fileset>
-		</copy>
-		<copy todir="externalLibs">
-			<fileset dir="/home/ubuntu/git/PiWC/PiWC/libs">
-				<filename name="slf4j-api-1.7.10.jar"/>	
-			</fileset>
-		</copy>
-		<copy todir="externalLibs">
-			<fileset dir="/home/ubuntu/git/PiWC/PiWC/libs">
-				<filename name="slf4j-nop-1.7.10.jar"/>	
-			</fileset>
-		</copy>
-		<copy todir="externalLibs">
-			<fileset dir="/home/ubuntu/git/PiWC/PiWC/libs">
+			<fileset dir="/home/ubuntu/git/JetRemote/JetRemote/libs">
 				<filename name="junit.jar"/>	
 			</fileset>
 		</copy>
 		<copy todir="externalLibs">
-			<fileset dir="/home/ubuntu/git/PiWC/PiWC/libs">
+			<fileset dir="/home/ubuntu/git/XBeeJavaLibrary/target/library">
+				<filename name="xbjlib-1.0.1.jar"/>	
+			</fileset>
+		</copy>
+		<copy todir="externalLibs">
+			<fileset dir="/home/ubuntu/git/JetRemote/JetRemote/libs">
+				<filename name="slf4j-api-1.7.10.jar"/>	
+			</fileset>
+		</copy>
+		<copy todir="externalLibs">
+			<fileset dir="/home/ubuntu/git/JetRemote/JetRemote/libs">
 				<filename name="remotevmlauncher-client-1.0-20140103.103630-5.jar"/>	
 			</fileset>
 		</copy>
 		<copy todir="externalLibs">
-			<fileset dir="/home/ubuntu/git/PiWC/PiWC/libs">
+			<fileset dir="/home/ubuntu/git/XBeeJavaLibrary/target/distribution/XBJL-1.0.1/extra-libs">
+				<filename name="rxtx-2.2.jar"/>	
+			</fileset>
+		</copy>
+		<copy todir="externalLibs">
+			<fileset dir="/home/ubuntu/git/JetRemote/JetRemote/libs">
 				<filename name="slf4j-log4j12-1.7.10.jar"/>	
 			</fileset>
 		</copy>
 		<copy todir="externalLibs">
-			<fileset dir="/home/ubuntu/git/PiWC/PiWC/libs">
+			<fileset dir="/home/ubuntu/git/JetRemote/JetRemote/libs">
 				<filename name="log4j.jar"/>	
 			</fileset>
 		</copy>
 		<copy todir="externalLibs">
-			<fileset dir="/home/ubuntu/Documentos/PiWC/XBJL-1.0.1/extra-libs">
-				<filename name="rxtx-2.2.jar"/>	
+			<fileset dir="/home/ubuntu/git/JetRemote/JetRemote/libs">
+				<filename name="slf4j-nop-1.7.10.jar"/>	
 			</fileset>
 		</copy>
 		
 		<mkdir dir="project" />
 		<copy todir="project">
-			<fileset dir="/home/ubuntu/git/PiWC">
-				<include name="PiWC/src/**" />
+			<fileset dir="/home/ubuntu/git/JetRemote">
+				<include name="JetRemote/src/**" />
 			</fileset>
 		</copy>
 		
@@ -93,7 +93,7 @@
 	
 		<!-- Copy project sources itself -->
 		<copy todir="build/src">
-			<fileset dir="project/PiWC/src">
+			<fileset dir="project/JetRemote/src">
 				<include name="**/*"/>
 			</fileset>
 		</copy>
@@ -108,7 +108,7 @@
 		
 		<!-- Copy over none Java-Files -->
 		<copy todir="build/classes">
-		<fileset dir="project/PiWC/src">
+		<fileset dir="project/JetRemote/src">
 			<exclude name="**/*.java"/>
 		</fileset>
 		</copy>
@@ -130,12 +130,12 @@
 		
 		
 		<fx:resources id="appRes">
-			<fx:fileset dir="dist" includes="PiWC.jar"/>
+			<fx:fileset dir="dist" includes="JetRemote.jar"/>
 			<fx:fileset dir="dist" includes="libs/*"/>
 		</fx:resources> 
 		
 		<fx:application id="fxApplication"
-			name="PiWC"
+			name="JetRemote"
 			mainClass="application.Main"
 		/>
 	
@@ -143,7 +143,7 @@
 		
 		
 		
-		<fx:jar destfile="dist/PiWC.jar">
+		<fx:jar destfile="dist/JetRemote.jar">
 			<fx:application refid="fxApplication"/>
 			<fileset dir="build/classes">
 			</fileset>
@@ -151,7 +151,7 @@
 			
 			<manifest>
 				<attribute name="Implementation-Vendor" value="Javier Hdez.   movidroid@gmail.com"/>
-				<attribute name="Implementation-Title" value="PiWC"/>
+				<attribute name="Implementation-Title" value="JetRemote"/>
 				<attribute name="Implementation-Version" value="1.0"/>
 				<attribute name="JavaFX-Feature-Proxy" value="None"/>
 			</manifest>

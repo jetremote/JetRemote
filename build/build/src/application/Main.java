@@ -28,7 +28,7 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
 	public static void main(String[] args) {
-		File file = new File("/var/log/PiWC.log");
+		File file = new File("/var/log/jet-remote.log");
 		try {
 			if(file.createNewFile());
 		} catch (IOException e) {
