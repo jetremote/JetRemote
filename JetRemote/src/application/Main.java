@@ -1,4 +1,4 @@
-/** PiWC :: Boat Control System to WaterSportsCenters
+/** Jet Remote :: Boat Control System to WaterSportsCenters
 Copyright (C) 2014  Javier Hdez. :: movidroid@gmail.com
 
     This program is free software: you can redistribute it and/or modify
@@ -19,6 +19,7 @@ package application;
 	
 import java.io.File;
 import java.io.IOException;
+import java.util.StringTokenizer;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -28,7 +29,7 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
 	public static void main(String[] args) {
-		File file = new File("/var/log/PiWC.log");
+		File file = new File("/tmp/jetremote.log");
 		try {
 			if(file.createNewFile());
 		} catch (IOException e) {
@@ -36,13 +37,21 @@ public class Main extends Application {
 		}
 		launch(args);
 		}
-	 
+	
+	static {
+	       String property = System.getProperty("java.library.path");
+	       StringTokenizer parser = new StringTokenizer(property, ";");
+	       while (parser.hasMoreTokens()) {
+	           System.err.println(parser.nextToken());
+	           }
+	        }
+
+	
 	@Override
 	public void start(Stage primaryStage) throws IOException {
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("Main_WhiteBg.fxml"));
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("Desktop.fxml"));
 		final Parent root = (Parent) loader.load();
 		final Scene scene = new Scene(root);
-		//scene.setCursor(Cursor.NONE);
 		scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 		primaryStage.setScene(scene);
 		primaryStage.show();

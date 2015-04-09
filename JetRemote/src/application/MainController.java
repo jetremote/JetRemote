@@ -1,4 +1,4 @@
-/** PiWC :: Boat Control System to WaterSportsCenters
+/** Jet Remote :: Boat Control System to WaterSportsCenters
 Copyright (C) 2014  Javier Hdez. :: movidroid@gmail.com
 
     This program is free software: you can redistribute it and/or modify
@@ -17,12 +17,15 @@ package application;
 **/
 package application;
 
+import java.io.IOException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Timer;
 import java.util.concurrent.TimeUnit;
 
 import javafx.beans.value.ChangeListener;
@@ -43,31 +46,36 @@ import javafx.scene.input.TouchEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import application.stt.Recognizer;
 import application.util.Utils;
 
 import com.digi.xbee.api.RemoteXBeeDevice;
 import com.digi.xbee.api.XBeeDevice;
 import com.digi.xbee.api.XBeeNetwork;
-import com.digi.xbee.api.exceptions.TimeoutException;
 import com.digi.xbee.api.exceptions.XBeeException;
 import com.digi.xbee.api.io.IOLine;
 import com.digi.xbee.api.io.IOMode;
 import com.digi.xbee.api.io.IOValue;
 import com.digi.xbee.api.models.XBee64BitAddress;
+import com.digi.xbee.api.utils.ByteUtils;
+
 
 public class MainController implements Initializable {
+	
 	static Logger LOG = LoggerFactory.getLogger(MainController.class);
 	private HashMap<String, CountDownService> mapCounterDown;
-	private XBeeDevice localXBee;
-	private RemoteXBeeDevice remote2XBee;
 	private ObservableList<Integer> items = FXCollections.observableArrayList(1,2,3,4,5,6,7,8,9,10
 			,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30);
+	// For the Xbee's
+	private XBeeDevice localXBee;
+	private XBeeNetwork xbeeNetwork;
 	private RemoteXBeeDevice selectedNode;
 	private RemoteXBeeDevice node1;
 	private RemoteXBeeDevice node2;
 	private RemoteXBeeDevice node3;
-	private RemoteXBeeDevice node4;
-    
+	private static HashMap<String, RemoteXBeeDevice> mapRemotesXbee;
+	protected byte[] rssi;
+	
 	@FXML
 	ListView<Integer> listview;
 	@FXML
@@ -84,30 +92,34 @@ public class MainController implements Initializable {
     Label timeContract;
     @FXML
     Label timeLeft;
-	private XBeeNetwork xbeeNetwork;
-	private HashMap<String, RemoteXBeeDevice> mapRemotesXbee;
-	
-    
-	
-    private void setSelectedNode(RemoteXBeeDevice node) {
-    	//selectedBoat.setStyle("-fx-background-color: white;-fx-text-fill:  #0b75e8; -fx-border-color: #0b75e8");
-    	// oldSelectedBoat var value change to newSelectedBoat
-    	//this.selectedBoat = bboat;
-		// Change style newSelectedBoat
-    	//selectedBoat.setStyle("-fx-background-color:  #0b75e8;-fx-text-fill: #FFFFFF;-fx-border-color: #0b75e8");
-    	inaccessibleControls(false);
-    	if(mapCounterDown!=null &&  mapCounterDown.get(selectedNode.getNodeID())!=null){
-    		timeLeft.textProperty().bind(mapCounterDown.get(selectedNode.getNodeID()).messageProperty());
-    		timeContract.textProperty().bind(mapCounterDown.get(selectedNode.getNodeID()).titleProperty());
-    		inaccessibleControls(true);
-    	}  else {
-    		timeContract.textProperty().unbind();
-    		timeLeft.textProperty().unbind();
-    		timeContract.textProperty().set("00:00");
-    		timeLeft.textProperty().set("00:00:00");
-    	}
+    @FXML
+    Label DB;
+
+    // For the Recognizer
+    private static Timer timerRecognizer;
+	private enum Words {APAGA, ARRANCA, EMERGENCIA}
+	private static String voiceCommand;
+	private static String voiceCommandValue;
+	private static Map<String, String> commandMap;
+	private static Map<String, Integer> commandValueMap;
+
+	public static String getVoiceCommand() {
+		return voiceCommand;
 	}
 
+	public static  void setVoiceCommand(String command) {
+		voiceCommand = command;
+	}
+
+	public static String getVoiceCommandValue() {
+		return voiceCommandValue;
+	}
+
+	public static void setVoiceCommandValue(String voiceCommandValue) {
+		MainController.voiceCommandValue = voiceCommandValue;
+	}
+	
+	  
 	public void inaccessibleControls(boolean b) {
 		minute5.setDisable(b);
 		minute30.setDisable(b);
@@ -191,16 +203,14 @@ public class MainController implements Initializable {
 	    				} catch (XBeeException e) {
 	    					LOG.error("Error opening localXBee " + e);
 	    				}
-	    				
+
 	    			if(localXBee.isOpen()) {
-	    				LOG.info("Nombre del nodo: " + localXBee.getNodeID());
-	    				LOG.info("Version del Hardware: " + localXBee.getHardwareVersion());
-	    				LOG.info("Version del Firmware: " + localXBee.getFirmwareVersion());
+	    					LOG.info("Nombre del nodo: " + localXBee.getNodeID());
 	    				// Obtain the remote XBee device from the XBee network.
     						xbeeNetwork = localXBee.getNetwork();
     						
     					// Instantiate the remotes XBee devices
-    						XBee64BitAddress node1Address = new XBee64BitAddress("0013A20040D619F3");
+    						XBee64BitAddress node1Address = new XBee64BitAddress("0013A20040D22151");
     						node1 = new RemoteXBeeDevice(localXBee, node1Address);
     						xbeeNetwork.addRemoteDevice(node1);
     						
@@ -212,68 +222,62 @@ public class MainController implements Initializable {
     						node3 = new RemoteXBeeDevice(localXBee, node3Address);
     						xbeeNetwork.addRemoteDevice(node3);
     						
-    						XBee64BitAddress node4Address = new XBee64BitAddress("0013A20040D22151");
-    						node4 = new RemoteXBeeDevice(localXBee, node4Address);
-    						xbeeNetwork.addRemoteDevice(node4);
-    						
     						try {
     								node1.setIOConfiguration(IOLine.DIO0_AD0,  IOMode.DIGITAL_OUT_LOW);
     								node2.setIOConfiguration(IOLine.DIO0_AD0,  IOMode.DIGITAL_OUT_LOW);
     								node3.setIOConfiguration(IOLine.DIO0_AD0,  IOMode.DIGITAL_OUT_LOW);
-    								node4.setIOConfiguration(IOLine.DIO0_AD0,  IOMode.DIGITAL_OUT_LOW);
     							} catch (XBeeException e) {
     								LOG.error(e.toString());
     							}
     						// Initialize selected Node
-    						if(node1.isRemote()){
     							selectedNode = node1;
-    						}
+    						
     				}
 	    			
-	    // Initialize HasMap for CounterDowns
+	    // Initialize HashMap for CounterDowns
 	    	mapCounterDown = new HashMap<String, MainController.CountDownService>();
-	    // Inititalize HasMap for RemotesXbee
+	    // Inititalize HashMap for RemotesXbee
 	    	mapRemotesXbee = new HashMap<String, RemoteXBeeDevice>();
 	    	mapRemotesXbee.put("1", node1);
 	    	mapRemotesXbee.put("2", node2);
-	    	mapRemotesXbee.put("3", node3);
-	    	mapRemotesXbee.put("4", node4);
+//	    	mapRemotesXbee.put("3", node3);
 	    	
     				
     	//Initialize ListView
     		listview.setItems(items);
     		listview.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Integer>() {
     		    public void changed(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
-    		    	selectedNode = mapRemotesXbee.get(newValue.toString());
-    		    	LOG.debug("Node to retrieve = node"+newValue);
+    		    	try {
+						rssi = localXBee.getParameter("DB");
+						DB.setText(ByteUtils.byteArrayToInt(rssi) + " Db");
+					} catch (XBeeException e) {
+						e.printStackTrace();
+					}
+    		    	if(newValue!=null){
+    		    		selectedNode = mapRemotesXbee.get(newValue.toString());
+    		    	}
     		    }
     		});
-  		
-		
+    		
+    		
 		// Menu Swipe Right
 				listview.setOnSwipeRight(new EventHandler<SwipeEvent>() {
-					@Override
 					public void handle(SwipeEvent event) {
-						if(selectedNode.isRemote()){
 			            	try {
 								selectedNode.setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
 							} catch (XBeeException e) {
 								LOG.error(e.toString());
 							}
-		            	}
 			            event.consume();
 					}
 				});
 		// Menu Swipe Left
 				listview.setOnSwipeLeft(new EventHandler<SwipeEvent>() {
-					@Override
 					public void handle(SwipeEvent event) {
-						if(selectedNode.isRemote()){
 			            	try {
 								selectedNode.setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
 							} catch (XBeeException e) {
 								LOG.error(e.toString());
-							}
 		            	}
 			            event.consume();
 					}
@@ -281,7 +285,6 @@ public class MainController implements Initializable {
 				
 		// Minute5 Button
 				minute5.setOnTouchPressed(new EventHandler<TouchEvent>() {
-					@Override
 					public void handle(TouchEvent event) {
 						timeContract.textProperty().setValue(Utils.appendMinutes(5, timeContract.getText()));
 			            event.consume();
@@ -289,7 +292,6 @@ public class MainController implements Initializable {
 				});
 		// Minute30 Button
 				minute30.setOnTouchPressed(new EventHandler<TouchEvent>() {
-					@Override
 					public void handle(TouchEvent event) {
 						timeContract.textProperty().setValue(Utils.appendMinutes(30, timeContract.getText()));
 			            event.consume();
@@ -297,7 +299,6 @@ public class MainController implements Initializable {
 				});
 		// Clear Button
 				clean.setOnTouchPressed(new EventHandler<TouchEvent>() {
-					@Override
 					public void handle(TouchEvent event) {
 						timeContract.setText("00:00");
 			            event.consume();
@@ -305,23 +306,60 @@ public class MainController implements Initializable {
 				});
 		// Start Button
 				start.setOnTouchPressed(new EventHandler<TouchEvent>() {
-					@Override
 					public void handle(TouchEvent event) {
+						try {
+							selectedNode.setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
+						} catch (XBeeException e) {
+							LOG.error(e.toString());
+						}
 						if(!timeContract.getText().equals("00:00")){
 			        		inaccessibleControls(true);
 			        		mapCounterDown.put(selectedNode.getNodeID(), new CountDownService());
 			        		mapCounterDown.get(selectedNode.getNodeID()).start();
 			        		
 			        		// bind service properties to the controls.
-			            	timeLeft.textProperty().bind(mapCounterDown.get(selectedNode.getNodeID()).messageProperty());
+			            	//timeLeft.textProperty().bind(mapCounterDown.get(selectedNode.getNodeID()).messageProperty());
 		        		}
+						try {
+							rssi = localXBee.getParameter("DB");
+							DB.setText(ByteUtils.byteArrayToInt(rssi) + " Db");
+						} catch (XBeeException e) {
+							e.printStackTrace();
+						}
 			            event.consume();
 					}
 				});
+				
+		// Start ALL
+		    	start.setOnSwipeLeft(new EventHandler<SwipeEvent>() {
+
+		    		public void handle(SwipeEvent event) {
+						for(String key : mapRemotesXbee.keySet()){
+							try {
+								mapRemotesXbee.get(key).setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
+							} catch (XBeeException e) {
+								e.printStackTrace();
+							}
+						}
+					}
+				});
+		    	
+		    	start.setOnSwipeRight(new EventHandler<SwipeEvent>() {
+
+		    		public void handle(SwipeEvent event) {
+						for(String key : mapRemotesXbee.keySet()){
+							try {
+								mapRemotesXbee.get(key).setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
+							} catch (XBeeException e) {
+								e.printStackTrace();
+							}
+						}
+					}
+				});
+		    	
 		// Stop Button
 				stop.setOnTouchPressed(new EventHandler<TouchEvent>() {
 
-					@Override
 					public void handle(TouchEvent event) {
 						if(!timeLeft.getText().equals("00:00:00")){
 			        		inaccessibleControls(false);
@@ -330,15 +368,138 @@ public class MainController implements Initializable {
 			        			currentService.cancel();
 			        		}
 		            	}
-						if(selectedNode.isRemote()){
 			            	try {
 								selectedNode.setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
+								LOG.debug("STOP");
 							} catch (XBeeException e) {
 								LOG.error(e.toString());
 							}
-		            	}
+			            	try {
+								rssi = localXBee.getParameter("DB");
+								DB.setText(ByteUtils.byteArrayToInt(rssi) + " Db");
+							} catch (XBeeException e) {
+								e.printStackTrace();
+							}
 		            	event.consume();
 					} 
 				});	
-    }
+    
+    
+    // Stop ALL
+    	stop.setOnSwipeLeft(new EventHandler<SwipeEvent>() {
+
+			public void handle(SwipeEvent event) {
+				for(String key : mapRemotesXbee.keySet()){
+					try {
+						mapRemotesXbee.get(key).setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
+					} catch (XBeeException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+    	
+    	stop.setOnSwipeRight(new EventHandler<SwipeEvent>() {
+
+    		public void handle(SwipeEvent event) {
+				for(String key : mapRemotesXbee.keySet()){
+					try {
+						mapRemotesXbee.get(key).setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
+					} catch (XBeeException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+    
+    // Native Pocketsphinx Library
+    	System.loadLibrary("pocketsphinx_jni");
+   	 
+    // Initialize Recognizer
+    	timerRecognizer = new Timer();
+    	//timerRecognizer.schedule(new Recognizer(), 0);
+    	timerRecognizer.schedule(new Recognizer(), 0, 4500);
+    	setVoiceCommand(null);
+    	commandMap = new HashMap<String, String>();
+    	commandMap.put("APAGA", "HIGH");
+    	commandMap.put("ARRANCA", "LOW");
+    	commandValueMap = new HashMap<String, Integer>();
+    	commandValueMap.put("UNO", 1);
+    	commandValueMap.put("DOS", 2);
+    	commandValueMap.put("TRES", 3);
+    	commandValueMap.put("CUATRO", 4);
+    	commandValueMap.put("CINCO", 5);
+    	commandValueMap.put("SEIS", 6);
+    	commandValueMap.put("SIETE", 7);
+    	commandValueMap.put("OCHO", 8);
+    	commandValueMap.put("NUEVE", 9);
+    	commandValueMap.put("DIEZ", 10);
+    	commandValueMap.put("ONCE", 11);
+    	commandValueMap.put("DOCE", 12);
+    	commandValueMap.put("TRECE", 13);
+    	commandValueMap.put("CATORCE", 14);
+    	commandValueMap.put("QUINCE", 15);
+    	commandValueMap.put("DIECISEIS", 16);
+    	commandValueMap.put("DIECISIETE", 17);
+    	commandValueMap.put("DIECIOCHO", 18);
+    	commandValueMap.put("DIECINUEVE", 19);
+    	commandValueMap.put("VEINTE", 20);
+    	commandValueMap.put("VEINTIUNO", 21);
+    	commandValueMap.put("VEINTIDOS", 22);
+    	commandValueMap.put("VEINTITRES", 23);
+    	commandValueMap.put("VEINTICUATRO", 24);
+    	commandValueMap.put("VEINTICINCO", 25);
+    	commandValueMap.put("VEINTISEIS", 26);
+    	commandValueMap.put("VEINTISIETE", 27);
+    	commandValueMap.put("VEINTIOCHO", 28);
+    	commandValueMap.put("VEINTINUEVE", 29);
+    	commandValueMap.put("TREINTA", 30);
+    }   
+    
+    
+    
+	public static void buildCommand(String str) throws IOException {
+		if(voiceCommand==null) {
+			switch (Words.valueOf(str)) {
+			case APAGA:
+					setVoiceCommand("APAGA");
+					Runtime.getRuntime().exec("aplay /home/pi/answers/stop-question.wav");
+				break;
+			case ARRANCA:
+					setVoiceCommand("ARRANCA");
+					Runtime.getRuntime().exec("aplay /home/pi/answers/start-question.wav");
+				break;
+			case EMERGENCIA:
+					emergency();
+					setVoiceCommand(null);
+					break;
+		    }
+		} else {
+			setVoiceCommandValue(str);
+			String status = commandMap.get(getVoiceCommand());
+			int number = commandValueMap.get(str);
+			LOG.info(status + " " + number);
+			// To-Do, if number is not in xbeeMap, play boat-not-registered,
+			//	and set to null voiceCommand and voiceCommandValue, on
+			//	the contrary performance the operation.
+			Runtime.getRuntime().exec("aplay /home/pi/answers/boat-not-registered.wav");
+			setVoiceCommand(null);
+			setVoiceCommandValue(null);
+		}
+	}
+
+	private static void emergency() throws IOException {
+		// Stop all boats
+		Runtime.getRuntime().exec("aplay /home/pi/answers/emergency.wav");
+			for(String key : mapRemotesXbee.keySet()){
+				try {
+					mapRemotesXbee.get(key).setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
+				} catch (XBeeException e) {
+					e.printStackTrace();
+				}
+			}
+		
+	}
+	
+	
 }

@@ -1,0 +1,116 @@
+.button {
+    -fx-background-color: white;
+}
+
+.button:pressed {
+	-fx-background-color:  #0b75e8;
+	-fx-border-color: #0b75e8;
+	-fx-text-fill: white;
+}
+
+#start{
+-fx-background-color: linear-gradient(greenyellow , limegreen );
+-fx-text-fill: white;
+-fx-font-size: 20px;
+-fx-padding: 5 30 5 30;
+} 
+#start:pressed{
+-fx-border-color: linear-gradient(greenyellow , limegreen );
+-fx-text-fill: limegreen;
+-fx-font-size: 20px;
+-fx-padding: 5 30 5 30;
+} 
+
+#stop{
+-fx-background-color: linear-gradient(orangered, red );
+-fx-text-fill: white;
+-fx-font-size: 20px;
+-fx-padding: 5 30 5 30;
+} 
+
+#stop:pressed{
+-fx-background-color: white;
+-fx-border-color: red;
+-fx-text-fill: red;
+-fx-font-size: 20px;
+-fx-padding: 5 30 5 30;
+} 
+
+
+
+/** CSS **/
+#listview{
+	-fx-border-color:derive(#0b75e8,80%);	
+}
+ /** LIS CELL **/
+#listview .list-cell {
+	-fx-padding: 10 0 10 0;
+	-fx-alignment: center;
+	-fx-text-fill: #0b75e8;
+	-fx-font-size: 20;
+	-fx-border-color: derive(#0b75e8,90%);
+	-fx-border-width: 0.05;
+}
+
+#listview:focused .list-cell:filled:focused:hover {
+    -fx-background-color: -fx-focus-color, -fx-cell-focus-inner-border, -fx-cell-hover-color;
+    -fx-background-insets: 0, 1, 2;
+    -fx-text-fill: -fx-text-inner-color;
+}
+
+#listview:selected .list-cell:filled:selected {
+    -fx-background-color: -fx-focus-color, -fx-cell-focus-inner-border, -fx-cell-hover-color;
+    -fx-background-insets: 0, 1, 2;
+    -fx-text-fill: -fx-text-inner-color;
+}
+
+
+/** SCROLL BAR **/
+/* The main scrollbar CSS class of ListView */
+#listview .scroll-bar:horizontal ,
+#listview  .scroll-bar:vertical{
+    -fx-background-color:transparent;
+	
+}
+
+
+/* The main scrollbar **track** CSS class  */
+#listview .scroll-bar:horizontal .track,
+#listview .scroll-bar:vertical .track{
+	-fx-background-color:transparent;
+	-fx-border-color:transparent;
+	-fx-background-radius: 0em;
+	-fx-border-radius:2em;
+}
+
+/* The increment and decrement button CSS class of scrollbar */
+#listview .scroll-bar:horizontal .increment-button ,
+#listview .scroll-bar:horizontal .decrement-button {
+    -fx-background-color:transparent;
+	-fx-background-radius: 0em;
+	-fx-padding:0 0 0 0;
+}
+
+/* The increment and decrement button CSS class of scrollbar */
+#listview .scroll-bar:vertical .increment-button ,
+#listview .scroll-bar:vertical .decrement-button {
+    -fx-background-color:transparent;
+	-fx-background-radius: 0em;
+	-fx-padding:0 0 0 0;
+}
+
+#listview  .scroll-bar .increment-arrow,
+#listview  .scroll-bar .decrement-arrow
+ {
+	-fx-shape: " ";	
+	-fx-padding:0;
+}
+
+/* The main scrollbar **thumb** CSS class which we drag every time (movable) */
+#listview .scroll-bar:horizontal .thumb,
+#listview .scroll-bar:vertical .thumb {
+    -fx-background-color:transparent ;
+	-fx-background-insets: 2, 0, 0;
+	-fx-background-radius: 2em;
+}
+

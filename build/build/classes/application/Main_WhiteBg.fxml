@@ -55,5 +55,10 @@
          </font>
       </Button>
       <ListView fx:id="listview" layoutX="5.0" layoutY="5.0" prefHeight="230.0" prefWidth="150.0" />
+      <Label fx:id="DB" layoutX="282.0" layoutY="90.0" text="0 Db">
+         <font>
+            <Font name="System Bold" size="10.0" />
+         </font>
+      </Label>
   </children>
 </AnchorPane>
