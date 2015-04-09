@@ -3,7 +3,11 @@ JET REMOTE
 
 Sistema de Control de Embarcaciones para Water Sports Centers.
 
-Jet Remote es una aplicación multiplataforma que permite desconectar embarcaciones a largas distancias.
+Jet Remote es un proyecto de código abierto cuyo objetivo es el desarrollo y producción de soluciones que incrementen la seguridad de las motos acuáticas (también conocidas como Jet-Ski o Personal WaterCraft).
+
+Jet Remote permite desconectar inmediatamente embarcaciones desde la orilla en caso de una conducta inadecuada por parte del piloto o en caso de existir riesgo de abordaje. 
+
+Ahora Jet Remote incluye reconocimiento de voz. 
 
 <h3>Software necesario</h3>
 - JetRemote.jar
