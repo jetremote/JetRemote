@@ -52,13 +52,14 @@ import application.util.Utils;
 import com.digi.xbee.api.RemoteXBeeDevice;
 import com.digi.xbee.api.XBeeDevice;
 import com.digi.xbee.api.XBeeNetwork;
+import com.digi.xbee.api.exceptions.TimeoutException;
 import com.digi.xbee.api.exceptions.XBeeException;
 import com.digi.xbee.api.io.IOLine;
 import com.digi.xbee.api.io.IOMode;
 import com.digi.xbee.api.io.IOValue;
 import com.digi.xbee.api.models.XBee64BitAddress;
 import com.digi.xbee.api.utils.ByteUtils;
-
+import com.sun.javafx.webkit.ThemeClientImpl;
 
 public class MainController implements Initializable {
 	
@@ -97,6 +98,7 @@ public class MainController implements Initializable {
 
     // For the Recognizer
     private static Timer timerRecognizer;
+    private static int LONG_PERIOD = 6500;
 	private enum Words {APAGA, ARRANCA, EMERGENCIA}
 	private static String voiceCommand;
 	private static String voiceCommandValue;
@@ -240,8 +242,6 @@ public class MainController implements Initializable {
 	    	mapRemotesXbee = new HashMap<String, RemoteXBeeDevice>();
 	    	mapRemotesXbee.put("1", node1);
 	    	mapRemotesXbee.put("2", node2);
-//	    	mapRemotesXbee.put("3", node3);
-	    	
     				
     	//Initialize ListView
     		listview.setItems(items);
@@ -417,12 +417,12 @@ public class MainController implements Initializable {
    	 
     // Initialize Recognizer
     	timerRecognizer = new Timer();
-    	//timerRecognizer.schedule(new Recognizer(), 0);
-    	timerRecognizer.schedule(new Recognizer(), 0, 4500);
+    	timerRecognizer.schedule(new Recognizer(false), 0, LONG_PERIOD);
     	setVoiceCommand(null);
     	commandMap = new HashMap<String, String>();
     	commandMap.put("APAGA", "HIGH");
     	commandMap.put("ARRANCA", "LOW");
+    	commandMap.put("EMERGENCIA", "HIGH");
     	commandValueMap = new HashMap<String, Integer>();
     	commandValueMap.put("UNO", 1);
     	commandValueMap.put("DOS", 2);
@@ -457,9 +457,9 @@ public class MainController implements Initializable {
     }   
     
     
-    
-	public static void buildCommand(String str) throws IOException {
-		if(voiceCommand==null) {
+	public static void buildCommand(String str) throws IOException, InterruptedException {
+		// Comprueba si la palabra es un comando.
+		if(commandMap.containsKey(str)==true) {
 			switch (Words.valueOf(str)) {
 			case APAGA:
 					setVoiceCommand("APAGA");
@@ -472,21 +472,29 @@ public class MainController implements Initializable {
 			case EMERGENCIA:
 					emergency();
 					setVoiceCommand(null);
-					break;
+				break;
 		    }
-		} else {
+		} else if (voiceCommand!=null && commandValueMap.containsKey(str)==true && mapRemotesXbee.containsKey(commandValueMap.get(str))==true) {
 			setVoiceCommandValue(str);
 			String status = commandMap.get(getVoiceCommand());
 			int number = commandValueMap.get(str);
-			LOG.info(status + " " + number);
-			// To-Do, if number is not in xbeeMap, play boat-not-registered,
-			//	and set to null voiceCommand and voiceCommandValue, on
-			//	the contrary performance the operation.
-			Runtime.getRuntime().exec("aplay /home/pi/answers/boat-not-registered.wav");
-			setVoiceCommand(null);
-			setVoiceCommandValue(null);
+				try {
+					mapRemotesXbee.get(number).setDIOValue(IOLine.DIO0_AD0, IOValue.valueOf(status));
+				} catch (TimeoutException e) {
+					LOG.error(e.toString());
+				} catch (XBeeException e) {
+					LOG.error(e.toString());
+				}
+				setVoiceCommand(null);
+				setVoiceCommandValue(null);
+			} else if (mapRemotesXbee.containsKey(commandValueMap.get(str))==false && voiceCommand!=null){
+				Runtime.getRuntime().exec("aplay /home/pi/answers/boat-not-registered.wav");
+				setVoiceCommand(null);
+				setVoiceCommandValue(null);
+			}
+	
 		}
-	}
+	
 
 	private static void emergency() throws IOException {
 		// Stop all boats
@@ -498,7 +506,6 @@ public class MainController implements Initializable {
 					e.printStackTrace();
 				}
 			}
-		
 	}
 	
 	

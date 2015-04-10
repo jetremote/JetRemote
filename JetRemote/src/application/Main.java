@@ -49,7 +49,7 @@ public class Main extends Application {
 	
 	@Override
 	public void start(Stage primaryStage) throws IOException {
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("Desktop.fxml"));
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("PiTFT_WhiteBg.fxml"));
 		final Parent root = (Parent) loader.load();
 		final Scene scene = new Scene(root);
 		scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());

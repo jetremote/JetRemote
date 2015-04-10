@@ -38,7 +38,12 @@ public class Recognizer extends TimerTask {
     private static TargetDataLine line;
 
     private static AudioInputStream ais;
-    
+
+	private boolean isQuestion;
+	public Recognizer(boolean b) {
+		isQuestion = b;
+	}
+
 
 	@Override
 	public void run() {
