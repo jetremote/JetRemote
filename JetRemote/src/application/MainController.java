@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Timer;
 import java.util.concurrent.TimeUnit;
 
 import javafx.beans.value.ChangeListener;
@@ -46,7 +45,7 @@ import javafx.scene.input.TouchEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import application.stt.Recognizer;
+import application.stt.Speech2Text;
 import application.util.Utils;
 
 import com.digi.xbee.api.RemoteXBeeDevice;
@@ -59,7 +58,13 @@ import com.digi.xbee.api.io.IOMode;
 import com.digi.xbee.api.io.IOValue;
 import com.digi.xbee.api.models.XBee64BitAddress;
 import com.digi.xbee.api.utils.ByteUtils;
-import com.sun.javafx.webkit.ThemeClientImpl;
+import com.pi4j.io.gpio.GpioController;
+import com.pi4j.io.gpio.GpioFactory;
+import com.pi4j.io.gpio.GpioPinDigitalInput;
+import com.pi4j.io.gpio.PinPullResistance;
+import com.pi4j.io.gpio.RaspiPin;
+import com.pi4j.io.gpio.event.GpioPinDigitalStateChangeEvent;
+import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 
 public class MainController implements Initializable {
 	
@@ -71,7 +76,7 @@ public class MainController implements Initializable {
 	private XBeeDevice localXBee;
 	private XBeeNetwork xbeeNetwork;
 	private RemoteXBeeDevice selectedNode;
-	private RemoteXBeeDevice node1;
+	private RemoteXBeeDevice node8;
 	private RemoteXBeeDevice node2;
 	private RemoteXBeeDevice node3;
 	private static HashMap<String, RemoteXBeeDevice> mapRemotesXbee;
@@ -95,10 +100,9 @@ public class MainController implements Initializable {
     Label timeLeft;
     @FXML
     Label DB;
+	
 
     // For the Recognizer
-    private static Timer timerRecognizer;
-    private static int LONG_PERIOD = 6500;
 	private enum Words {APAGA, ARRANCA, EMERGENCIA}
 	private static String voiceCommand;
 	private static String voiceCommandValue;
@@ -207,14 +211,13 @@ public class MainController implements Initializable {
 	    				}
 
 	    			if(localXBee.isOpen()) {
-	    					LOG.info("Nombre del nodo: " + localXBee.getNodeID());
 	    				// Obtain the remote XBee device from the XBee network.
     						xbeeNetwork = localXBee.getNetwork();
     						
     					// Instantiate the remotes XBee devices
-    						XBee64BitAddress node1Address = new XBee64BitAddress("0013A20040D22151");
-    						node1 = new RemoteXBeeDevice(localXBee, node1Address);
-    						xbeeNetwork.addRemoteDevice(node1);
+    						XBee64BitAddress node8Address = new XBee64BitAddress("0013A20040D22151");
+    						node8 = new RemoteXBeeDevice(localXBee, node8Address);
+    						xbeeNetwork.addRemoteDevice(node8);
     						
     						XBee64BitAddress node2Address = new XBee64BitAddress("0013A20040D2215A");
     						node2 = new RemoteXBeeDevice(localXBee, node2Address);
@@ -225,22 +228,21 @@ public class MainController implements Initializable {
     						xbeeNetwork.addRemoteDevice(node3);
     						
     						try {
-    								node1.setIOConfiguration(IOLine.DIO0_AD0,  IOMode.DIGITAL_OUT_LOW);
+    								node8.setIOConfiguration(IOLine.DIO0_AD0,  IOMode.DIGITAL_OUT_LOW);
     								node2.setIOConfiguration(IOLine.DIO0_AD0,  IOMode.DIGITAL_OUT_LOW);
     								node3.setIOConfiguration(IOLine.DIO0_AD0,  IOMode.DIGITAL_OUT_LOW);
     							} catch (XBeeException e) {
     								LOG.error(e.toString());
     							}
     						// Initialize selected Node
-    							selectedNode = node1;
-    						
+    							selectedNode = node2;
     				}
 	    			
 	    // Initialize HashMap for CounterDowns
 	    	mapCounterDown = new HashMap<String, MainController.CountDownService>();
 	    // Inititalize HashMap for RemotesXbee
 	    	mapRemotesXbee = new HashMap<String, RemoteXBeeDevice>();
-	    	mapRemotesXbee.put("1", node1);
+	    	mapRemotesXbee.put("8", node8);
 	    	mapRemotesXbee.put("2", node2);
     				
     	//Initialize ListView
@@ -412,13 +414,10 @@ public class MainController implements Initializable {
 			}
 		});
     
-    // Native Pocketsphinx Library
+    // Load native Pocketsphinx library
     	System.loadLibrary("pocketsphinx_jni");
    	 
-    // Initialize Recognizer
-    	timerRecognizer = new Timer();
-    	timerRecognizer.schedule(new Recognizer(false), 0, LONG_PERIOD);
-    	setVoiceCommand(null);
+    // Maps for Speech2Text
     	commandMap = new HashMap<String, String>();
     	commandMap.put("APAGA", "HIGH");
     	commandMap.put("ARRANCA", "LOW");
@@ -454,32 +453,50 @@ public class MainController implements Initializable {
     	commandValueMap.put("VEINTIOCHO", 28);
     	commandValueMap.put("VEINTINUEVE", 29);
     	commandValueMap.put("TREINTA", 30);
+    	
+		// Provision gpio pin #29 as an input pin
+    	// http://pi4j.com/pins/model-b-plus.html
+    	final Speech2Text s2t = new Speech2Text();
+    	final GpioController gpio = GpioFactory.getInstance();
+    	final GpioPinDigitalInput micButton = gpio.provisionDigitalInputPin(RaspiPin.GPIO_29, 
+                PinPullResistance.PULL_DOWN);
+    	
+    	 micButton.addListener(new GpioPinListenerDigital() {
+             public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
+                 if(micButton.isHigh()==true) {
+                	 s2t.capture.start();
+                 } else if (micButton.isLow()==true) {
+                	 s2t.capture.stop();
+                 }
+             }
+         });
     }   
     
     
 	public static void buildCommand(String str) throws IOException, InterruptedException {
-		// Comprueba si la palabra es un comando.
 		if(commandMap.containsKey(str)==true) {
 			switch (Words.valueOf(str)) {
 			case APAGA:
 					setVoiceCommand("APAGA");
-					Runtime.getRuntime().exec("aplay /home/pi/answers/stop-question.wav");
+					//Runtime.getRuntime().exec("aplay /home/pi/answers/stop-question.wav");
 				break;
 			case ARRANCA:
 					setVoiceCommand("ARRANCA");
-					Runtime.getRuntime().exec("aplay /home/pi/answers/start-question.wav");
+					//Runtime.getRuntime().exec("aplay /home/pi/answers/start-question.wav");
 				break;
 			case EMERGENCIA:
 					emergency();
 					setVoiceCommand(null);
 				break;
 		    }
-		} else if (voiceCommand!=null && commandValueMap.containsKey(str)==true && mapRemotesXbee.containsKey(commandValueMap.get(str))==true) {
+		} 
+		else if (voiceCommand!=null && commandValueMap.containsKey(str)==true && mapRemotesXbee.containsKey(commandValueMap.get(str))==true) {
 			setVoiceCommandValue(str);
 			String status = commandMap.get(getVoiceCommand());
 			int number = commandValueMap.get(str);
 				try {
 					mapRemotesXbee.get(number).setDIOValue(IOLine.DIO0_AD0, IOValue.valueOf(status));
+					System.out.println(number + " " + status);
 				} catch (TimeoutException e) {
 					LOG.error(e.toString());
 				} catch (XBeeException e) {
@@ -487,26 +504,23 @@ public class MainController implements Initializable {
 				}
 				setVoiceCommand(null);
 				setVoiceCommandValue(null);
-			} else if (mapRemotesXbee.containsKey(commandValueMap.get(str))==false && voiceCommand!=null){
-				Runtime.getRuntime().exec("aplay /home/pi/answers/boat-not-registered.wav");
+		} else if (mapRemotesXbee.containsKey(commandValueMap.get(str))==false && voiceCommand!=null){
+				//Runtime.getRuntime().exec("aplay /home/pi/answers/boat-not-registered.wav");
 				setVoiceCommand(null);
 				setVoiceCommandValue(null);
-			}
-	
 		}
+	}
 	
 
 	private static void emergency() throws IOException {
 		// Stop all boats
-		Runtime.getRuntime().exec("aplay /home/pi/answers/emergency.wav");
+		//Runtime.getRuntime().exec("aplay /home/pi/answers/emergency.wav");
 			for(String key : mapRemotesXbee.keySet()){
 				try {
 					mapRemotesXbee.get(key).setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
 				} catch (XBeeException e) {
 					e.printStackTrace();
 				}
-			}
+		}
 	}
-	
-	
 }
