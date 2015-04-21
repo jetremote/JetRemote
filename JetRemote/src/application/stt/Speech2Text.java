@@ -135,8 +135,8 @@ public class Speech2Text {
 		        
 		        d = new Decoder(config);
 		        d.startUtt();
-		        d.setRawdataSize(300000);
 		        
+		        d.setRawdataSize(300000);
 		        byte[] b = new byte[4096];
 		        try {
 		            int nbytes;
@@ -149,22 +149,20 @@ public class Speech2Text {
 		        } catch (IOException e) {
 		            System.out.println("Error when reading AudioInputStream: " + e.getMessage());
 		        }
-		        d.endUtt();
-		        short[] data1 = d.getRawdata();
-		        System.out.println("Data size: " + data1.length);
+		        d.endUtt();		        
 
 		        for (Segment seg : d.seg()) {
-		        	if(!seg.getWord().equals("<s>")&&!seg.getWord().equals("</s>")&&!seg.getWord().equals("<sil>"))
-		    	    System.out.println(seg.getWord());
+		        	if(!seg.getWord().equals("<s>")&&!seg.getWord().equals("</s>")&&!seg.getWord().equals("<sil>")){
+						try {
+							MainController.buildCommand(seg.getWord().toUpperCase());
+						} catch (IOException e) {
+							e.printStackTrace();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+		    	    System.out.println(seg.getWord().toUpperCase());
+		        	}
 		        }
-		    	    try {
-						MainController.buildCommand(d.hyp().getHypstr().toUpperCase());
-						System.out.println("Palabra: " + d.hyp().getHypstr().toUpperCase());
-					} catch (IOException e) {
-				          System.out.println( "S2T IOException: " + e.toString());
-					} catch (InterruptedException e) {
-				          System.out.println( "InterruptedException S2T: " + e.toString());
-					}		        
 			}
 	  }
 }

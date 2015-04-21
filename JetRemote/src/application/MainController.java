@@ -470,7 +470,7 @@ public class MainController implements Initializable {
                  }
              }
          });
-    }   
+    }  // end Initialize.
     
     
 	public static void buildCommand(String str) throws IOException, InterruptedException {
@@ -478,11 +478,9 @@ public class MainController implements Initializable {
 			switch (Words.valueOf(str)) {
 			case APAGA:
 					setVoiceCommand("APAGA");
-					//Runtime.getRuntime().exec("aplay /home/pi/answers/stop-question.wav");
 				break;
 			case ARRANCA:
 					setVoiceCommand("ARRANCA");
-					//Runtime.getRuntime().exec("aplay /home/pi/answers/start-question.wav");
 				break;
 			case EMERGENCIA:
 					emergency();
@@ -490,7 +488,7 @@ public class MainController implements Initializable {
 				break;
 		    }
 		} 
-		else if (voiceCommand!=null && commandValueMap.containsKey(str)==true && mapRemotesXbee.containsKey(commandValueMap.get(str))==true) {
+		else if (!voiceCommand.equals(null) && commandValueMap.containsKey(str)==true && mapRemotesXbee.containsKey(commandValueMap.get(str))==true) {
 			setVoiceCommandValue(str);
 			String status = commandMap.get(getVoiceCommand());
 			int number = commandValueMap.get(str);
@@ -504,23 +502,20 @@ public class MainController implements Initializable {
 				}
 				setVoiceCommand(null);
 				setVoiceCommandValue(null);
-		} else if (mapRemotesXbee.containsKey(commandValueMap.get(str))==false && voiceCommand!=null){
-				//Runtime.getRuntime().exec("aplay /home/pi/answers/boat-not-registered.wav");
+		} else if (mapRemotesXbee.containsKey(commandValueMap.get(str))==false && !voiceCommand.equals(null)){
 				setVoiceCommand(null);
 				setVoiceCommandValue(null);
 		}
-	}
+	} 
 	
 
 	private static void emergency() throws IOException {
-		// Stop all boats
-		//Runtime.getRuntime().exec("aplay /home/pi/answers/emergency.wav");
 			for(String key : mapRemotesXbee.keySet()){
 				try {
 					mapRemotesXbee.get(key).setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
 				} catch (XBeeException e) {
 					e.printStackTrace();
 				}
-		}
+			}
 	}
 }
