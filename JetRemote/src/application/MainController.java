@@ -244,7 +244,7 @@ public class MainController implements Initializable {
 	    	mapRemotesXbee = new HashMap<String, RemoteXBeeDevice>();
 	    	mapRemotesXbee.put("8", node8);
 	    	mapRemotesXbee.put("2", node2);
-    				
+	    	
     	//Initialize ListView
     		listview.setItems(items);
     		listview.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Integer>() {
@@ -470,6 +470,7 @@ public class MainController implements Initializable {
                  }
              }
          });
+    	 
     }  // end Initialize.
     
     
@@ -488,13 +489,13 @@ public class MainController implements Initializable {
 				break;
 		    }
 		} 
-		else if (!voiceCommand.equals(null) && commandValueMap.containsKey(str)==true && mapRemotesXbee.containsKey(commandValueMap.get(str))==true) {
+		else if (!voiceCommand.equals(null) && commandValueMap.containsKey(str)==true && mapRemotesXbee.containsKey(String.valueOf(commandValueMap.get(str)))==true) {
 			setVoiceCommandValue(str);
 			String status = commandMap.get(getVoiceCommand());
 			int number = commandValueMap.get(str);
 				try {
-					mapRemotesXbee.get(number).setDIOValue(IOLine.DIO0_AD0, IOValue.valueOf(status));
 					System.out.println(number + " " + status);
+					mapRemotesXbee.get(String.valueOf(number)).setDIOValue(IOLine.DIO0_AD0, IOValue.valueOf(status));
 				} catch (TimeoutException e) {
 					LOG.error(e.toString());
 				} catch (XBeeException e) {
@@ -502,7 +503,7 @@ public class MainController implements Initializable {
 				}
 				setVoiceCommand(null);
 				setVoiceCommandValue(null);
-		} else if (mapRemotesXbee.containsKey(commandValueMap.get(str))==false && !voiceCommand.equals(null)){
+		} else if (mapRemotesXbee.containsKey(String.valueOf(commandValueMap.get(str)))==false && !voiceCommand.equals(null)){
 				setVoiceCommand(null);
 				setVoiceCommandValue(null);
 		}
