@@ -23,5 +23,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="/home/ubuntu/Descargas/remotevmlauncher-client-1.0-20140103.103630-5.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

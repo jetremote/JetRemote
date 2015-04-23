@@ -39,36 +39,29 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.input.SwipeEvent;
 import javafx.scene.input.TouchEvent;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import application.util.Utils;
 
 import com.digi.xbee.api.RemoteXBeeDevice;
 import com.digi.xbee.api.XBeeDevice;
 import com.digi.xbee.api.XBeeNetwork;
+import com.digi.xbee.api.exceptions.TimeoutException;
 import com.digi.xbee.api.exceptions.XBeeException;
 import com.digi.xbee.api.io.IOLine;
 import com.digi.xbee.api.io.IOMode;
 import com.digi.xbee.api.io.IOValue;
 import com.digi.xbee.api.models.XBee64BitAddress;
-import com.digi.xbee.api.utils.ByteUtils;
 
 
 public class MainController implements Initializable {
-	static Logger LOG = LoggerFactory.getLogger(MainController.class);
 	private HashMap<String, CountDownService> mapCounterDown;
 	private ObservableList<Integer> items = FXCollections.observableArrayList(1,2,3,4,5,6,7,8,9,10
 			,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30);
 	private XBeeDevice localXBee;
 	private XBeeNetwork xbeeNetwork;
 	private RemoteXBeeDevice selectedNode;
-	private RemoteXBeeDevice node1;
+	private RemoteXBeeDevice node6;
 	private RemoteXBeeDevice node2;
-	private RemoteXBeeDevice node3;
 	private HashMap<String, RemoteXBeeDevice> mapRemotesXbee;
-	protected byte[] rssi;
 	
 	@FXML
 	ListView<Integer> listview;
@@ -112,7 +105,7 @@ public class MainController implements Initializable {
 			try {
 				date = new SimpleDateFormat("HH:mm").parse(timeContract.getText());
 			} catch (ParseException e1) {
-				LOG.error(e1.toString());
+				System.out.println(e1.toString());
 			}
 			counter = (int) TimeUnit.MILLISECONDS.toSeconds(date.getTime());
 			return new Task<Void>() {
@@ -157,7 +150,6 @@ public class MainController implements Initializable {
 					timeContract.setText("00:00");
 					updateMessage("00:00:00");
 					mapCounterDown.remove(selectedNode.getNodeID());
-
 					super.succeeded();
 				}
 			};
@@ -166,198 +158,187 @@ public class MainController implements Initializable {
 	
 	
     public void initialize(URL location, ResourceBundle resources) {
-    			// Initialize a local XBee (coordinator) 
-    				localXBee = new XBeeDevice("/dev/ttyUSB0", 9600);
-	    				try {
-	    					localXBee.open();
-	    				} catch (XBeeException e) {
-	    					LOG.error("Error opening localXBee " + e);
-	    				}
+		// Initialize a local XBee (coordinator) 
+		localXBee = new XBeeDevice("/dev/ttyUSB0", 9600);
+			try {
+				localXBee.open();
+			} catch (XBeeException e) {
+				System.out.println("Error opening localXBee " + e);
+			}
 
-	    			if(localXBee.isOpen()) {
-	    					LOG.info("Nombre del nodo: " + localXBee.getNodeID());
-	    				// Obtain the remote XBee device from the XBee network.
-    						xbeeNetwork = localXBee.getNetwork();
-    						
-    					// Instantiate the remotes XBee devices
-    						XBee64BitAddress node1Address = new XBee64BitAddress("0013A20040D22151");
-    						node1 = new RemoteXBeeDevice(localXBee, node1Address);
-    						xbeeNetwork.addRemoteDevice(node1);
-    						
-    						XBee64BitAddress node2Address = new XBee64BitAddress("0013A20040D2215A");
-    						node2 = new RemoteXBeeDevice(localXBee, node2Address);
-    						xbeeNetwork.addRemoteDevice(node2);
-    						
-    						XBee64BitAddress node3Address = new XBee64BitAddress("0013A20040D220FC");
-    						node3 = new RemoteXBeeDevice(localXBee, node3Address);
-    						xbeeNetwork.addRemoteDevice(node3);
-    						
-    						try {
-    								node1.setIOConfiguration(IOLine.DIO0_AD0,  IOMode.DIGITAL_OUT_LOW);
-    								node2.setIOConfiguration(IOLine.DIO0_AD0,  IOMode.DIGITAL_OUT_LOW);
-    								node3.setIOConfiguration(IOLine.DIO0_AD0,  IOMode.DIGITAL_OUT_LOW);
-    							} catch (XBeeException e) {
-    								LOG.error(e.toString());
-    							}
-    						// Initialize selected Node
-    							selectedNode = node1;
-    						
-    				}
+		if(localXBee.isOpen()) {
+			// Obtain the remote XBee device from the XBee network.
+				xbeeNetwork = localXBee.getNetwork();
+				
+			// Instantiate the remotes XBee devices
+				XBee64BitAddress node6Address = new XBee64BitAddress("0013A20040D22151");
+				node6 = new RemoteXBeeDevice(localXBee, node6Address);
+				xbeeNetwork.addRemoteDevice(node6);
+				
+				XBee64BitAddress node2Address = new XBee64BitAddress("0013A20040D2215A");
+				node2 = new RemoteXBeeDevice(localXBee, node2Address);
+				xbeeNetwork.addRemoteDevice(node2);
+				
+				/*XBee64BitAddress node3Address = new XBee64BitAddress("0013A20040D220FC");
+				node3 = new RemoteXBeeDevice(localXBee, node3Address);
+				xbeeNetwork.addRemoteDevice(node3);*/
+				
+				selectedNode = node6;
+			}
 	    			
 	    // Initialize HashMap for CounterDowns
 	    	mapCounterDown = new HashMap<String, MainController.CountDownService>();
 	    // Inititalize HashMap for RemotesXbee
 	    	mapRemotesXbee = new HashMap<String, RemoteXBeeDevice>();
-	    	mapRemotesXbee.put("1", node1);
+	    	mapRemotesXbee.put("6", node6);
 	    	mapRemotesXbee.put("2", node2);
-	    	mapRemotesXbee.put("3", node3);
-	    	
     				
     	//Initialize ListView
-    		listview.setItems(items);
-    		listview.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Integer>() {
-    		    public void changed(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
-    		    	try {
-						rssi = localXBee.getParameter("DB");
-						DB.setText(ByteUtils.byteArrayToInt(rssi) + " Db");
-					} catch (XBeeException e) {
-						e.printStackTrace();
-					}
-    		    	if(newValue!=null){
-    		    		selectedNode = mapRemotesXbee.get(newValue.toString());
-    		    	}
-    		    }
-    		});
+		listview.setItems(items);
+		listview.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Integer>() {
+		    public void changed(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
+		    	if(newValue!=null && mapRemotesXbee.containsKey(newValue.toString())){
+		    		selectedNode = mapRemotesXbee.get(newValue.toString());
+		    	}
+		    }
+		});
     		
     		
 		// Menu Swipe Right
-				listview.setOnSwipeRight(new EventHandler<SwipeEvent>() {
-					public void handle(SwipeEvent event) {
-			            	try {
-								selectedNode.setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
-							} catch (XBeeException e) {
-								LOG.error(e.toString());
-							}
-			            event.consume();
+		listview.setOnSwipeRight(new EventHandler<SwipeEvent>() {
+			
+			public void handle(SwipeEvent event) {
+	            	try {
+						selectedNode.setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
+					} catch (XBeeException e) {
+						System.out.println(e.toString());
 					}
-				});
+	            event.consume();
+			}
+		});
 		// Menu Swipe Left
-				listview.setOnSwipeLeft(new EventHandler<SwipeEvent>() {
-					public void handle(SwipeEvent event) {
-			            	try {
-								selectedNode.setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
-							} catch (XBeeException e) {
-								LOG.error(e.toString());
-		            	}
-			            event.consume();
-					}
-				});
+		listview.setOnSwipeLeft(new EventHandler<SwipeEvent>() {
+			
+			public void handle(SwipeEvent event) {
+            	try {
+					selectedNode.setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
+				} catch (XBeeException e) {
+					System.out.println(e.toString());
+            	}
+	            event.consume();
+			}
+		});
 				
 		// Minute5 Button
-				minute5.setOnTouchPressed(new EventHandler<TouchEvent>() {
-					public void handle(TouchEvent event) {
-						timeContract.textProperty().setValue(Utils.appendMinutes(5, timeContract.getText()));
-			            event.consume();
-					}
-				});
+		minute5.setOnTouchPressed(new EventHandler<TouchEvent>() {
+			
+			public void handle(TouchEvent event) {
+				timeContract.textProperty().setValue(Utils.appendMinutes(5, timeContract.getText()));
+	            event.consume();
+			}
+		});
 		// Minute30 Button
-				minute30.setOnTouchPressed(new EventHandler<TouchEvent>() {
-					public void handle(TouchEvent event) {
-						timeContract.textProperty().setValue(Utils.appendMinutes(30, timeContract.getText()));
-			            event.consume();
-					}
-				});
+		minute30.setOnTouchPressed(new EventHandler<TouchEvent>() {
+			
+			public void handle(TouchEvent event) {
+				timeContract.textProperty().setValue(Utils.appendMinutes(30, timeContract.getText()));
+	            event.consume();
+			}
+		});
 		// Clear Button
-				clean.setOnTouchPressed(new EventHandler<TouchEvent>() {
-					public void handle(TouchEvent event) {
-						timeContract.setText("00:00");
-			            event.consume();
-					}
-				});
+		clean.setOnTouchPressed(new EventHandler<TouchEvent>() {
+			
+			public void handle(TouchEvent event) {
+				timeContract.setText("00:00");
+	            event.consume();
+			}
+		});
 		// Start Button
-				start.setOnTouchPressed(new EventHandler<TouchEvent>() {
-					public void handle(TouchEvent event) {
+		start.setOnTouchPressed(new EventHandler<TouchEvent>() {
+			
+			public void handle(TouchEvent event) {
+				Thread t = new Thread(new Runnable() {
+					public void run() {
 						try {
 							selectedNode.setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
 						} catch (XBeeException e) {
-							LOG.error(e.toString());
+							System.out.println("Error trying to set the DIO value >> " +  e.toString());
+							return;
 						}
-						if(!timeContract.getText().equals("00:00")){
-			        		inaccessibleControls(true);
-			        		mapCounterDown.put(selectedNode.getNodeID(), new CountDownService());
-			        		mapCounterDown.get(selectedNode.getNodeID()).start();
-			        		
-			        		// bind service properties to the controls.
-			            	timeLeft.textProperty().bind(mapCounterDown.get(selectedNode.getNodeID()).messageProperty());
-		        		}
-						try {
-							rssi = localXBee.getParameter("DB");
-							DB.setText(ByteUtils.byteArrayToInt(rssi) + " Db");
-						} catch (XBeeException e) {
-							e.printStackTrace();
-						}
-			            event.consume();
 					}
 				});
+				t.start();
+					
+				if(!timeContract.getText().equals("00:00")) {
+	        		inaccessibleControls(true);
+	        		mapCounterDown.put(selectedNode.getNodeID(), new CountDownService());
+	        		mapCounterDown.get(selectedNode.getNodeID()).start();
+	        		
+	        		// bind service properties to the controls.
+	            	timeLeft.textProperty().bind(mapCounterDown.get(selectedNode.getNodeID()).messageProperty());
+        		}
+	            event.consume();
+			}
+		});
 				
 		// Start ALL
-		    	start.setOnSwipeLeft(new EventHandler<SwipeEvent>() {
+    	start.setOnSwipeLeft(new EventHandler<SwipeEvent>() {
 
-		    		public void handle(SwipeEvent event) {
-						for(String key : mapRemotesXbee.keySet()){
-							try {
-								mapRemotesXbee.get(key).setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
-							} catch (XBeeException e) {
-								e.printStackTrace();
-							}
-						}
+    		public void handle(SwipeEvent event) {
+				for(String key : mapRemotesXbee.keySet()){
+					try {
+						mapRemotesXbee.get(key).setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
+					} catch (XBeeException e) {
+						e.printStackTrace();
 					}
-				});
+				}
+			}
+		});
 		    	
-		    	start.setOnSwipeRight(new EventHandler<SwipeEvent>() {
+    	start.setOnSwipeRight(new EventHandler<SwipeEvent>() {
 
-		    		public void handle(SwipeEvent event) {
-						for(String key : mapRemotesXbee.keySet()){
-							try {
-								mapRemotesXbee.get(key).setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
-							} catch (XBeeException e) {
-								e.printStackTrace();
-							}
-						}
+    		public void handle(SwipeEvent event) {
+				for(String key : mapRemotesXbee.keySet()){
+					try {
+						mapRemotesXbee.get(key).setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
+					} catch (XBeeException e) {
+						e.printStackTrace();
 					}
-				});
+				}
+			}
+		});
 		    	
 		// Stop Button
-				stop.setOnTouchPressed(new EventHandler<TouchEvent>() {
+		stop.setOnTouchPressed(new EventHandler<TouchEvent>() {
 
-					public void handle(TouchEvent event) {
-						if(!timeLeft.getText().equals("00:00:00")){
-			        		inaccessibleControls(false);
-			        		CountDownService currentService = mapCounterDown.get(selectedNode.getNodeID());
-			        		if(currentService!=null){
-			        			currentService.cancel();
-			        		}
-		            	}
-			            	try {
-								selectedNode.setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
-								LOG.debug("STOP");
-							} catch (XBeeException e) {
-								LOG.error(e.toString());
-							}
-			            	try {
-								rssi = localXBee.getParameter("DB");
-								DB.setText(ByteUtils.byteArrayToInt(rssi) + " Db");
-							} catch (XBeeException e) {
-								e.printStackTrace();
-							}
-		            	event.consume();
-					} 
-				});	
+			public void handle(TouchEvent event) {
+				if(!timeLeft.getText().equals("00:00:00")){
+	        		inaccessibleControls(false);
+	        		CountDownService currentService = mapCounterDown.get(selectedNode.getNodeID());
+	        		if(currentService!=null){
+	        			currentService.cancel();
+	        		}
+            	}
+			Thread t = new Thread(new Runnable() {
+				public void run() {
+					try {
+						selectedNode.setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
+					} catch (TimeoutException e) {
+						System.out.println("Error trying to set the DIO value >> " +  e.toString());
+					} catch (XBeeException e) {
+						System.out.println("Error trying to set the DIO value >> " +  e.toString());
+					}
+				}
+			});
+			t.start();
+        	event.consume();
+			} 
+		});	
     
     
-    // Stop ALL
-    	stop.setOnSwipeLeft(new EventHandler<SwipeEvent>() {
-
+	    // Stop ALL
+		stop.setOnSwipeLeft(new EventHandler<SwipeEvent>() {
+	
 			public void handle(SwipeEvent event) {
 				for(String key : mapRemotesXbee.keySet()){
 					try {
@@ -368,10 +349,10 @@ public class MainController implements Initializable {
 				}
 			}
 		});
-    	
-    	stop.setOnSwipeRight(new EventHandler<SwipeEvent>() {
-
-    		public void handle(SwipeEvent event) {
+	    	
+		stop.setOnSwipeRight(new EventHandler<SwipeEvent>() {
+	
+			public void handle(SwipeEvent event) {
 				for(String key : mapRemotesXbee.keySet()){
 					try {
 						mapRemotesXbee.get(key).setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
@@ -382,5 +363,5 @@ public class MainController implements Initializable {
 			}
 		});
     
-    }   
+    }  // end Initialize 
 }
