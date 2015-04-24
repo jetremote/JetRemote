@@ -39,7 +39,16 @@ Ahora Jet Remote incluye reconocimiento de voz.
 - Antena 2.4GHz RP-SMA
 
 
+====
+JetRemote ahora utiliza Maven para la gestión de dependencias y construcción del proyecto. 
 
+Instalación en Raspbian:
+
+sudo apt-get install maven
+
+Para generar el proyecto:
+
+mvn clean install assembly:single
 
 ====
 
