@@ -15,7 +15,7 @@ Copyright (C) 2014  Javier Hdez. :: movidroid@gmail.com
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package application;
 **/
-package application;
+package com.jetremote;
 
 import java.net.URL;
 import java.text.ParseException;
@@ -39,17 +39,16 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.input.SwipeEvent;
 import javafx.scene.input.TouchEvent;
-import application.util.Utils;
 
 import com.digi.xbee.api.RemoteXBeeDevice;
 import com.digi.xbee.api.XBeeDevice;
 import com.digi.xbee.api.XBeeNetwork;
-import com.digi.xbee.api.exceptions.TimeoutException;
 import com.digi.xbee.api.exceptions.XBeeException;
 import com.digi.xbee.api.io.IOLine;
-import com.digi.xbee.api.io.IOMode;
 import com.digi.xbee.api.io.IOValue;
 import com.digi.xbee.api.models.XBee64BitAddress;
+import com.jetremote.util.Utils;
+import com.jetremote.util.XBeeThread;
 
 
 public class MainController implements Initializable {
@@ -79,10 +78,8 @@ public class MainController implements Initializable {
     Label timeContract;
     @FXML
     Label timeLeft;
-    @FXML
-    Label DB;
-	  
 
+    
 	public void inaccessibleControls(boolean b) {
 		minute5.setDisable(b);
 		minute30.setDisable(b);
@@ -257,16 +254,7 @@ public class MainController implements Initializable {
 		start.setOnTouchPressed(new EventHandler<TouchEvent>() {
 			
 			public void handle(TouchEvent event) {
-				Thread t = new Thread(new Runnable() {
-					public void run() {
-						try {
-							selectedNode.setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
-						} catch (XBeeException e) {
-							System.out.println("Error trying to set the DIO value >> " +  e.toString());
-							return;
-						}
-					}
-				});
+				XBeeThread t = new XBeeThread(selectedNode, IOValue.LOW);
 				t.start();
 					
 				if(!timeContract.getText().equals("00:00")) {
@@ -319,17 +307,7 @@ public class MainController implements Initializable {
 	        			currentService.cancel();
 	        		}
             	}
-			Thread t = new Thread(new Runnable() {
-				public void run() {
-					try {
-						selectedNode.setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
-					} catch (TimeoutException e) {
-						System.out.println("Error trying to set the DIO value >> " +  e.toString());
-					} catch (XBeeException e) {
-						System.out.println("Error trying to set the DIO value >> " +  e.toString());
-					}
-				}
-			});
+			XBeeThread t = new XBeeThread(selectedNode, IOValue.HIGH);
 			t.start();
         	event.consume();
 			} 

@@ -15,7 +15,7 @@ Copyright (C) 2014  Javier Hdez. :: movidroid@gmail.com
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package application;
 **/
-package application.util;
+package com.jetremote.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

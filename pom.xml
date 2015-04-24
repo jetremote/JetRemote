@@ -28,7 +28,7 @@
     <configuration>
         	<archive>
             	<manifest>
-            		<mainClass>application.Main</mainClass>
+            		<mainClass>com.jetremote.Main</mainClass>
         		</manifest>
         		<manifestEntries>
                         <Built-By>Javier Hdez.</Built-By>
@@ -71,7 +71,7 @@
       		<archive>
       			<manifest>
       				<addClasspath>true</addClasspath>
-      				<mainClass>application.Main</mainClass>
+      				<mainClass>com.jetremote.Main</mainClass>
       			</manifest>
       		</archive>
       	</configuration>
