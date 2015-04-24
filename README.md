@@ -7,14 +7,12 @@ Jet Remote es un proyecto de código abierto cuyo objetivo es el desarrollo y pr
 
 Jet Remote permite desconectar inmediatamente embarcaciones desde la orilla en caso de una conducta inadecuada por parte del piloto o en caso de existir riesgo de abordaje. 
 
-Ahora Jet Remote incluye reconocimiento de voz. 
 
 <h3>Software necesario</h3>
 - JetRemote.jar
 - Sistema Operativo (Rasbian, Pidora, ArchLinux, FreeBSD,...)
 - Oracle Java 8 
 - Librería Java RxTx
-- Pocketsphinx
 
 
 <h3>Hardware necesario</h3>
@@ -28,7 +26,6 @@ Ahora Jet Remote incluye reconocimiento de voz.
 - [Batería LiPo 6000mAh / 3.7V]
 - [Cargador de batería LiPo USB y DC]
 - [Conversor DC 5V (5A)]
-- [Micrófono y tarjeta de sonido USB]
 
 <h4>Para cada Embarcación (1 milla con antena de alta ganancia)</h4>
 - [XBee Pro 63mW serie 2B (RPSMA)]
