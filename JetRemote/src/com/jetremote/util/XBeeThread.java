@@ -10,6 +10,7 @@ public class XBeeThread extends Thread{
 	private RemoteXBeeDevice device;
 	private IOValue value;
 
+	// Constructor
 	public XBeeThread(RemoteXBeeDevice device, IOValue value) {
 		this.device = device;
 		this.value = value;
