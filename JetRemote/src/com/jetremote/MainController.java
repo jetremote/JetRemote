@@ -53,6 +53,7 @@ import com.jetremote.util.XBeeThread;
 
 public class MainController implements Initializable {
 	private HashMap<String, CountDownService> mapCounterDown;
+	private HashMap<String, RemoteXBeeDevice> mapRemotesXbee;
 	private ObservableList<Integer> items = FXCollections.observableArrayList(1,2,3,4,5,6,7,8,9,10
 			,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30);
 	private XBeeDevice localXBee;
@@ -60,7 +61,7 @@ public class MainController implements Initializable {
 	private RemoteXBeeDevice selectedNode;
 	private RemoteXBeeDevice node6;
 	private RemoteXBeeDevice node2;
-	private HashMap<String, RemoteXBeeDevice> mapRemotesXbee;
+	
 	
 	@FXML
 	ListView<Integer> listview;
@@ -87,72 +88,6 @@ public class MainController implements Initializable {
 		start.setDisable(b);
 	}
 
-	
-	// CountDownService class
-	public class CountDownService extends Service<Void> {
-		Date date;
-		int seconds;
-		int hours;
-		int minutes;
-		int counter;
-		String currentTime;
-		
-		@Override
-		protected Task<Void> createTask() {
-			try {
-				date = new SimpleDateFormat("HH:mm").parse(timeContract.getText());
-			} catch (ParseException e1) {
-				System.out.println(e1.toString());
-			}
-			counter = (int) TimeUnit.MILLISECONDS.toSeconds(date.getTime());
-			return new Task<Void>() {
-				private Thread thread;
-
-				@SuppressWarnings("static-access")
-				@Override
-				protected Void call() throws Exception {
-					updateMessage("START!");
-					updateTitle(timeContract.getText());
-					for (int i = 0; i <= counter;) {
-			              try {
-							thread.sleep(1000);
-						} catch (InterruptedException e) {
-							thread.interrupt();
-							e.printStackTrace();
-						}
-				              hours = counter / 3600;
-				              minutes = (counter % 3600) / 60;
-				              seconds = counter % 60;
-				              currentTime = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-				              updateMessage(currentTime);				              
-				              counter--;
-			            }
-					return null;
-				}
-				
-				@Override
-				protected void cancelled() {
-					inaccessibleControls(false);
-					timeContract.textProperty().unbind();
-					timeContract.setText("00:00");
-					updateMessage("00:00:00");
-					mapCounterDown.remove(selectedNode.getNodeID());
-					super.cancelled();
-				}
-
-				@Override
-				protected void succeeded() {
-					inaccessibleControls(false);
-					timeContract.textProperty().unbind();
-					timeContract.setText("00:00");
-					updateMessage("00:00:00");
-					mapCounterDown.remove(selectedNode.getNodeID());
-					super.succeeded();
-				}
-			};
-		}
-	};
-	
 	
     public void initialize(URL location, ResourceBundle resources) {
 		// Initialize a local XBee (coordinator) 
@@ -342,4 +277,71 @@ public class MainController implements Initializable {
 		});
     
     }  // end Initialize 
+    
+    
+    
+	// CountDownService class
+	public class CountDownService extends Service<Void> {
+		Date date;
+		int seconds;
+		int hours;
+		int minutes;
+		int counter;
+		String currentTime;
+		
+		@Override
+		protected Task<Void> createTask() {
+			try {
+				date = new SimpleDateFormat("HH:mm").parse(timeContract.getText());
+			} catch (ParseException e1) {
+				System.out.println(e1.toString());
+			}
+			counter = (int) TimeUnit.MILLISECONDS.toSeconds(date.getTime());
+			return new Task<Void>() {
+				private Thread thread;
+
+				@SuppressWarnings("static-access")
+				@Override
+				protected Void call() throws Exception {
+					updateMessage("START!");
+					updateTitle(timeContract.getText());
+					for (int i = 0; i <= counter;) {
+			              try {
+							thread.sleep(1000);
+						} catch (InterruptedException e) {
+							thread.interrupt();
+							e.printStackTrace();
+						}
+				              hours = counter / 3600;
+				              minutes = (counter % 3600) / 60;
+				              seconds = counter % 60;
+				              currentTime = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+				              updateMessage(currentTime);				              
+				              counter--;
+			            }
+					return null;
+				}
+				
+				@Override
+				protected void cancelled() {
+					inaccessibleControls(false);
+					timeContract.textProperty().unbind();
+					timeContract.setText("00:00");
+					updateMessage("00:00:00");
+					mapCounterDown.remove(selectedNode.getNodeID());
+					super.cancelled();
+				}
+
+				@Override
+				protected void succeeded() {
+					inaccessibleControls(false);
+					timeContract.textProperty().unbind();
+					timeContract.setText("00:00");
+					updateMessage("00:00:00");
+					mapCounterDown.remove(selectedNode.getNodeID());
+					super.succeeded();
+				}
+			};
+		}
+	};
 }

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.shape.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import application.*?>
+
+<AnchorPane fx:id="root" prefHeight="0.0" prefWidth="0.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.MainController">
+  <children>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="WHITE" height="240.0" stroke="BLACK" strokeType="INSIDE" width="320.0" />
+      <HBox alignment="TOP_CENTER" layoutX="159.0" layoutY="6.0" prefHeight="38.0" prefWidth="150.0" spacing="10.0">
+         <children>
+            <Button fx:id="minute5" layoutX="32.0" layoutY="10.0" mnemonicParsing="false" prefHeight="38.0" prefWidth="90.0" style="-fx-border-color: #0b75e8;" text="5" textFill="#0b75e8">
+               <font>
+                  <Font size="19.0" />
+               </font>
+            </Button>
+            <Button fx:id="minute30" layoutX="125.0" layoutY="10.0" mnemonicParsing="false" prefWidth="90.0" style="-fx-border-color: #0b75e8;" text="30" textFill="#0b75e8">
+               <font>
+                  <Font size="19.0" />
+               </font>
+            </Button>
+         </children>
+         <opaqueInsets>
+            <Insets />
+         </opaqueInsets>
+      </HBox>
+      <Label fx:id="timeContract" layoutX="159.0" layoutY="84.0" text="00:00">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Label>
+      <Label fx:id="timeLeft" contentDisplay="CENTER" layoutX="158.0" layoutY="148.0" text="00:00:00" textFill="RED">
+         <font>
+            <Font size="32.0" />
+         </font>
+      </Label>
+      <Button fx:id="start" layoutX="159.0" layoutY="108.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="150.0" text="START">
+         <font>
+            <Font size="21.0" />
+         </font></Button>
+      <Button fx:id="stop" layoutX="159.0" layoutY="186.0" mnemonicParsing="false" prefHeight="47.0" prefWidth="150.0" text="STOP">
+         <font>
+            <Font size="20.0" />
+         </font></Button>
+      <Button fx:id="clean" layoutX="159.0" layoutY="53.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="150.0" style="-fx-border-color: #0b75e8;" text="Limpiar" textFill="#0b75e8">
+         <font>
+            <Font size="16.0" />
+         </font>
+      </Button>
+      <ListView fx:id="listview" layoutX="5.0" layoutY="5.0" prefHeight="230.0" prefWidth="150.0" />
+      <Label fx:id="DB" layoutX="282.0" layoutY="90.0" text="0 Db">
+         <font>
+            <Font name="System Bold" size="10.0" />
+         </font>
+      </Label>
+  </children>
+</AnchorPane>

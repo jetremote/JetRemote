@@ -7,6 +7,8 @@ Jet Remote es un proyecto de código abierto cuyo objetivo es el desarrollo y pr
 
 Jet Remote permite desconectar inmediatamente embarcaciones desde la orilla en caso de una conducta inadecuada por parte del piloto o en caso de existir riesgo de abordaje. 
 
+Jet Remote Server implementa un servidor Bluetooth para el uso de Jet Remote con la app para Android.
+
 
 <h3>Software necesario</h3>
 - JetRemote.jar
@@ -26,6 +28,7 @@ Jet Remote permite desconectar inmediatamente embarcaciones desde la orilla en c
 - [Batería LiPo 6000mAh / 3.7V]
 - [Cargador de batería LiPo USB y DC]
 - [Conversor DC 5V (5A)]
+- [USB Bluetooth]
 
 <h4>Para cada Embarcación (1 milla con antena de alta ganancia)</h4>
 - [XBee Pro 63mW serie 2B (RPSMA)]
