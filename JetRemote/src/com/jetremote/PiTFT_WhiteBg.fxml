@@ -11,7 +11,7 @@
 <?import javafx.scene.text.*?>
 <?import application.*?>
 
-<AnchorPane fx:id="root" prefHeight="0.0" prefWidth="0.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.MainController">
+<AnchorPane fx:id="root" prefHeight="0.0" prefWidth="0.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.jetremote.MainController">
   <children>
       <Rectangle arcHeight="5.0" arcWidth="5.0" fill="WHITE" height="240.0" stroke="BLACK" strokeType="INSIDE" width="320.0" />
       <HBox alignment="TOP_CENTER" layoutX="159.0" layoutY="6.0" prefHeight="38.0" prefWidth="150.0" spacing="10.0">

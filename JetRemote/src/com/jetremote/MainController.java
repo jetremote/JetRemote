@@ -48,8 +48,7 @@ import com.digi.xbee.api.io.IOLine;
 import com.digi.xbee.api.io.IOValue;
 import com.digi.xbee.api.models.XBee64BitAddress;
 import com.jetremote.util.Utils;
-import com.jetremote.util.XBeeThread;
-
+import com.jetremote.xbee.XBeeThread;
 
 public class MainController implements Initializable {
 	private HashMap<String, CountDownService> mapCounterDown;
@@ -60,7 +59,6 @@ public class MainController implements Initializable {
 	private XBeeNetwork xbeeNetwork;
 	private RemoteXBeeDevice selectedNode;
 	private RemoteXBeeDevice node6;
-	private RemoteXBeeDevice node2;
 	
 	
 	@FXML
@@ -107,14 +105,6 @@ public class MainController implements Initializable {
 				node6 = new RemoteXBeeDevice(localXBee, node6Address);
 				xbeeNetwork.addRemoteDevice(node6);
 				
-				XBee64BitAddress node2Address = new XBee64BitAddress("0013A20040D2215A");
-				node2 = new RemoteXBeeDevice(localXBee, node2Address);
-				xbeeNetwork.addRemoteDevice(node2);
-				
-				/*XBee64BitAddress node3Address = new XBee64BitAddress("0013A20040D220FC");
-				node3 = new RemoteXBeeDevice(localXBee, node3Address);
-				xbeeNetwork.addRemoteDevice(node3);*/
-				
 				selectedNode = node6;
 			}
 	    			
@@ -123,7 +113,6 @@ public class MainController implements Initializable {
 	    // Inititalize HashMap for RemotesXbee
 	    	mapRemotesXbee = new HashMap<String, RemoteXBeeDevice>();
 	    	mapRemotesXbee.put("6", node6);
-	    	mapRemotesXbee.put("2", node2);
     				
     	//Initialize ListView
 		listview.setItems(items);

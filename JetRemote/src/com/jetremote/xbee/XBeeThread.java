@@ -1,4 +1,4 @@
-package com.jetremote.util;
+package com.jetremote.xbee;
 
 import com.digi.xbee.api.RemoteXBeeDevice;
 import com.digi.xbee.api.exceptions.TimeoutException;
