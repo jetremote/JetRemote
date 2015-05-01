@@ -40,9 +40,10 @@ import javafx.scene.control.ListView;
 import javafx.scene.input.SwipeEvent;
 import javafx.scene.input.TouchEvent;
 
+import com.digi.xbee.api.DigiPointDevice;
+import com.digi.xbee.api.DigiPointNetwork;
+import com.digi.xbee.api.RemoteDigiPointDevice;
 import com.digi.xbee.api.RemoteXBeeDevice;
-import com.digi.xbee.api.XBeeDevice;
-import com.digi.xbee.api.XBeeNetwork;
 import com.digi.xbee.api.exceptions.XBeeException;
 import com.digi.xbee.api.io.IOLine;
 import com.digi.xbee.api.io.IOValue;
@@ -55,10 +56,10 @@ public class MainController implements Initializable {
 	private HashMap<String, RemoteXBeeDevice> mapRemotesXbee;
 	private ObservableList<Integer> items = FXCollections.observableArrayList(1,2,3,4,5,6,7,8,9,10
 			,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30);
-	private XBeeDevice localXBee;
-	private XBeeNetwork xbeeNetwork;
-	private RemoteXBeeDevice selectedNode;
-	private RemoteXBeeDevice node6;
+	private DigiPointDevice localXBee;
+	private DigiPointNetwork xbeeNetwork;
+	private RemoteDigiPointDevice selectedNode;
+	private RemoteDigiPointDevice node6;
 	
 	
 	@FXML
@@ -89,7 +90,7 @@ public class MainController implements Initializable {
 	
     public void initialize(URL location, ResourceBundle resources) {
 		// Initialize a local XBee (coordinator) 
-		localXBee = new XBeeDevice("/dev/ttyUSB0", 9600);
+		localXBee = new DigiPointDevice("/dev/ttyUSB0", 9600);
 			try {
 				localXBee.open();
 			} catch (XBeeException e) {
@@ -98,11 +99,11 @@ public class MainController implements Initializable {
 
 		if(localXBee.isOpen()) {
 			// Obtain the remote XBee device from the XBee network.
-				xbeeNetwork = localXBee.getNetwork();
+				xbeeNetwork = (DigiPointNetwork) localXBee.getNetwork();
 				
 			// Instantiate the remotes XBee devices
-				XBee64BitAddress node6Address = new XBee64BitAddress("0013A20040D22151");
-				node6 = new RemoteXBeeDevice(localXBee, node6Address);
+				XBee64BitAddress node6Address = new XBee64BitAddress("0013A20040A2C795");
+				node6 = (RemoteDigiPointDevice) new RemoteXBeeDevice(localXBee, node6Address);
 				xbeeNetwork.addRemoteDevice(node6);
 				
 				selectedNode = node6;
@@ -119,7 +120,7 @@ public class MainController implements Initializable {
 		listview.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Integer>() {
 		    public void changed(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
 		    	if(newValue!=null && mapRemotesXbee.containsKey(newValue.toString())){
-		    		selectedNode = mapRemotesXbee.get(newValue.toString());
+		    		selectedNode = (RemoteDigiPointDevice) mapRemotesXbee.get(newValue.toString());
 		    	}
 		    }
 		});

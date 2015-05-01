@@ -11,10 +11,11 @@ Jet Remote Server implementa un servidor Bluetooth para el uso de Jet Remote con
 
 
 <h3>Software necesario</h3>
-- JetRemote Server
+- JetRemote 868 MHz
 - Sistema Operativo (Rasbian, Pidora, ArchLinux, FreeBSD,...)
 - Oracle Java 8 
 - Librería Java RxTx
+- Librería Bluecove
 
 
 <h3>Hardware necesario</h3>
@@ -22,21 +23,18 @@ Jet Remote Server implementa un servidor Bluetooth para el uso de Jet Remote con
 <h4>Para el Control a Distancia</h4>
 - [Raspberry Pi B, B+ y Pi2] (http://www.raspberrypi.org/)
 - [Tarjeta SDHC Speed Class 10 (de al menos 8Gb)] (http://es.wikipedia.org/wiki/SDHC)
-- XBee Pro 63mW serie 2B (RPSMA)
-- Antena 2.4GHz RP-SMA
+- XBee Pro 868 (RPSMA)
+- Antena 868MHz RP-SMA
 - Pantalla TFT Raspberry Pi - 2.8" táctil (PiTFT)
-- Batería LiPo 6000mAh / 3.7V
+- Batería LiPo 6000-1200mAh / 3.7V
 - Cargador de batería LiPo USB y DC
 - Conversor DC 5V (5A)
 - Bluetooth USB
 
-<h4>Para cada Embarcación (1 milla con antena de alta ganancia)</h4>
-- XBee Pro 63mW serie 2B (RPSMA)
-- Antena 2.4GHz RP-SMA
+<h4>Para cada Embarcación (1 milla)</h4>
+- XBee Pro 868 (RPSMA)
+- Antena 868MHz RP-SMA
 
-<h4>Para cada Embarcación (9 millas, 28 millas con antena de alta ganancia)</h4>
-- XBee-PRO® 868 MHz(http://www.digi.com/products/wireless-wired-embedded-solutions/zigbee-rf-modules/point-multipoint-rfmodules/xbee-pro-900hp)
-- Antena 868 MHz RP-SMA
 
 
 ====

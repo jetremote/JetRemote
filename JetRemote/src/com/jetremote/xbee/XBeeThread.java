@@ -1,16 +1,16 @@
 package com.jetremote.xbee;
 
-import com.digi.xbee.api.RemoteXBeeDevice;
+import com.digi.xbee.api.RemoteDigiPointDevice;
 import com.digi.xbee.api.exceptions.TimeoutException;
 import com.digi.xbee.api.exceptions.XBeeException;
 import com.digi.xbee.api.io.IOLine;
 import com.digi.xbee.api.io.IOValue;
 
 public class XBeeThread extends Thread{
-	private RemoteXBeeDevice device;
+	private RemoteDigiPointDevice device;
 	private IOValue value;
 
-	public XBeeThread(RemoteXBeeDevice device, IOValue value) {
+	public XBeeThread(RemoteDigiPointDevice device, IOValue value) {
 		this.device = device;
 		this.value = value;
 	}
