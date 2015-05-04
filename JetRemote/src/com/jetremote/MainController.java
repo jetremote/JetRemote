@@ -31,6 +31,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -43,21 +44,20 @@ import javafx.scene.input.TouchEvent;
 import com.digi.xbee.api.DigiPointDevice;
 import com.digi.xbee.api.DigiPointNetwork;
 import com.digi.xbee.api.RemoteDigiPointDevice;
-import com.digi.xbee.api.RemoteXBeeDevice;
+import com.digi.xbee.api.exceptions.TimeoutException;
 import com.digi.xbee.api.exceptions.XBeeException;
 import com.digi.xbee.api.io.IOLine;
 import com.digi.xbee.api.io.IOValue;
 import com.digi.xbee.api.models.XBee64BitAddress;
 import com.jetremote.util.Utils;
-import com.jetremote.xbee.XBeeThread;
 
 public class MainController implements Initializable {
 	private HashMap<String, CountDownService> mapCounterDown;
-	private HashMap<String, RemoteXBeeDevice> mapRemotesXbee;
+	private HashMap<String, RemoteDigiPointDevice> mapRemotesXbee;
 	private ObservableList<Integer> items = FXCollections.observableArrayList(1,2,3,4,5,6,7,8,9,10
 			,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30);
 	private DigiPointDevice localXBee;
-	private DigiPointNetwork xbeeNetwork;
+	private DigiPointNetwork digiPointNetwork;
 	private RemoteDigiPointDevice selectedNode;
 	private RemoteDigiPointDevice node6;
 	
@@ -99,12 +99,12 @@ public class MainController implements Initializable {
 
 		if(localXBee.isOpen()) {
 			// Obtain the remote XBee device from the XBee network.
-				xbeeNetwork = (DigiPointNetwork) localXBee.getNetwork();
+				digiPointNetwork =   (DigiPointNetwork) localXBee.getNetwork();
 				
 			// Instantiate the remotes XBee devices
 				XBee64BitAddress node6Address = new XBee64BitAddress("0013A20040A2C795");
-				node6 = (RemoteDigiPointDevice) new RemoteXBeeDevice(localXBee, node6Address);
-				xbeeNetwork.addRemoteDevice(node6);
+				node6 = new RemoteDigiPointDevice(localXBee, node6Address);
+				digiPointNetwork.addRemoteDevice(node6);
 				
 				selectedNode = node6;
 			}
@@ -112,7 +112,7 @@ public class MainController implements Initializable {
 	    // Initialize HashMap for CounterDowns
 	    	mapCounterDown = new HashMap<String, MainController.CountDownService>();
 	    // Inititalize HashMap for RemotesXbee
-	    	mapRemotesXbee = new HashMap<String, RemoteXBeeDevice>();
+	    	mapRemotesXbee = new HashMap<String, RemoteDigiPointDevice>();
 	    	mapRemotesXbee.put("6", node6);
     				
     	//Initialize ListView
@@ -179,8 +179,18 @@ public class MainController implements Initializable {
 		start.setOnTouchPressed(new EventHandler<TouchEvent>() {
 			
 			public void handle(TouchEvent event) {
-				XBeeThread t = new XBeeThread(selectedNode, IOValue.LOW);
-				t.start();
+				Runnable t = new Runnable() {
+					public void run() {
+						try {
+							selectedNode.setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
+						} catch (TimeoutException e) {
+							e.printStackTrace();
+						} catch (XBeeException e) {
+							e.printStackTrace();
+						}
+					}
+				};
+				t.run();
 					
 				if(!timeContract.getText().equals("00:00")) {
 	        		inaccessibleControls(true);
@@ -193,6 +203,33 @@ public class MainController implements Initializable {
 	            event.consume();
 			}
 		});
+		
+		start.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent event) {
+            	Runnable t = new Runnable() {
+					public void run() {
+						try {
+							selectedNode.setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
+						} catch (TimeoutException e) {
+							e.printStackTrace();
+						} catch (XBeeException e) {
+							e.printStackTrace();
+						}
+					}
+				};
+				t.run();
+					
+				if(!timeContract.getText().equals("00:00")) {
+	        		inaccessibleControls(true);
+	        		mapCounterDown.put(selectedNode.getNodeID(), new CountDownService());
+	        		mapCounterDown.get(selectedNode.getNodeID()).start();
+	        		
+	        		// bind service properties to the controls.
+	            	timeLeft.textProperty().bind(mapCounterDown.get(selectedNode.getNodeID()).messageProperty());
+        		}
+	            event.consume();
+			}
+        });
 				
 		// Start ALL
     	start.setOnSwipeLeft(new EventHandler<SwipeEvent>() {
@@ -232,8 +269,44 @@ public class MainController implements Initializable {
 	        			currentService.cancel();
 	        		}
             	}
-			XBeeThread t = new XBeeThread(selectedNode, IOValue.HIGH);
-			t.start();
+				Runnable t = new Runnable() {
+					public void run() {
+						try {
+							selectedNode.setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
+						} catch (TimeoutException e) {
+							e.printStackTrace();
+						} catch (XBeeException e) {
+							e.printStackTrace();
+						}
+					}
+				};
+				t.run();
+        	event.consume();
+			} 
+		});	
+		
+		stop.setOnAction(new EventHandler<ActionEvent>() {
+
+			public void handle(ActionEvent event) {
+				if(!timeLeft.getText().equals("00:00:00")){
+	        		inaccessibleControls(false);
+	        		CountDownService currentService = mapCounterDown.get(selectedNode.getNodeID());
+	        		if(currentService!=null){
+	        			currentService.cancel();
+	        		}
+            	}
+				Runnable t = new Runnable() {
+					public void run() {
+						try {
+							selectedNode.setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
+						} catch (TimeoutException e) {
+							e.printStackTrace();
+						} catch (XBeeException e) {
+							e.printStackTrace();
+						}
+					}
+				};
+				t.run();
         	event.consume();
 			} 
 		});	
