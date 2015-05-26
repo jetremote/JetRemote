@@ -31,7 +31,7 @@
             		<mainClass>com.jetremote.Main</mainClass>
         		</manifest>
         		<manifestEntries>
-                        <Built-By>Javier Hdez.</Built-By>
+                        <Built-By>Javier Hernández</Built-By>
                     </manifestEntries>
     		</archive>
     		<descriptorRefs>
@@ -102,5 +102,10 @@
   		<artifactId>xbjlib</artifactId>
   		<version>1.0.1</version>
   	</dependency>
+  	<dependency>
+	    <groupId>com.pi4j</groupId>
+	    <artifactId>pi4j-core</artifactId>
+	   <version>1.0</version>
+	</dependency>
     </dependencies>
 </project>
