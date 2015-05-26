@@ -49,7 +49,7 @@ mvn clean install assembly:single
 
 ====
 
-Si descubres algún error, deseas aportar alguna sugerencia o solicitar una funcionalidad, por favor, utiliza la [página de issues de Github](https://github.com/linuxgc/PiWC/issues) para avisarnos.
+Si descubres algún error, deseas aportar alguna sugerencia o solicitar una funcionalidad, por favor, utiliza la [página de issues de Github](https://github.com/jetremote/JetRemote/issues) para avisarnos.
 
 
 JetRemote es libre bajo la [GNU General Public License v.3] (http://www.gnu.org/licenses/gpl.html)
