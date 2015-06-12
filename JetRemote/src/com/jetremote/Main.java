@@ -1,4 +1,4 @@
-/** Jet Remote :: JetSki Control System to WaterSportsCenters
+/** Jet Remote :: JetSki Control System to Water Sports Centers
 Copyright (C) 2015  Javier Hernández Déniz. :: jetremote.canarias@gmail.com
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -13,7 +13,12 @@ Copyright (C) 2015  Javier Hernández Déniz. :: jetremote.canarias@gmail.com
 **/
 package com.jetremote;
 	
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Properties;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -26,21 +31,36 @@ import com.digi.xbee.api.exceptions.XBeeException;
 import com.digi.xbee.api.io.IOLine;
 import com.digi.xbee.api.io.IOValue;
 import com.digi.xbee.api.models.XBee64BitAddress;
+import com.jetremote.xml.ModuleRF;
+import com.jetremote.xml.ModuleRFXmlParser;
 
 public class Main extends Application {
     
 	private static HashMap<String, String> PINMAPPING = new HashMap<String, String>();
 	private static HashMap<String, String> STRINGMAPPING = new HashMap<String, String>();
-	private static HashMap<String, RemoteDigiPointDevice> XBEEMAPPING = new HashMap<String, RemoteDigiPointDevice>();
 	
 	private static DigiPointDevice localXBee;
 	
 	private static DigiPointNetwork digiPointNetwork;
 	
-	private static RemoteDigiPointDevice node6;
+	private static ArrayList<ModuleRF> serials = null;
+	
+	
+	
 	
 
 	public static void main(String[] args) {
+		
+		Properties properties = System.getProperties();
+		String port = "/dev/ttyAMA0";
+			  
+		String currentPorts = properties.getProperty("gnu.io.rxtx.SerialPorts", port);
+		  if (currentPorts.equals(port)) {
+		     properties.setProperty("gnu.io.rxtx.SerialPorts", port);
+		  } else {
+		     properties.setProperty("gnu.io.rxtx.SerialPorts", currentPorts + File.pathSeparator + port);
+		  }
+		  
 		  PINMAPPING.put("00", "1");
 	      PINMAPPING.put("01", "2");
 	      PINMAPPING.put("02", "3");
@@ -66,7 +86,7 @@ public class Main extends Application {
 	      STRINGMAPPING.put("#", "#");
 	      
 		// Initialize a local XBee (coordinator) 
-		localXBee = new DigiPointDevice("/dev/ttyUSB0", 9600);
+		localXBee = new DigiPointDevice(port, 9600);
 			try {
 				localXBee.open();
 			} catch (XBeeException e) {
@@ -75,15 +95,30 @@ public class Main extends Application {
 
 		if(localXBee.isOpen()) {
 		  // Obtain the remote XBee device from the XBee network.
-			digiPointNetwork =   (DigiPointNetwork) localXBee.getNetwork();
+			digiPointNetwork = (DigiPointNetwork) localXBee.getNetwork();
+			
+			//Locate the file
+			File xmlFile = new File("/tmp/jetremote.xml");
+			
+			//Create the parser instance
+			ModuleRFXmlParser parser = new ModuleRFXmlParser();
+			
+			//Parse the file
+			
+			try {
+				serials = parser.parseXml(new FileInputStream(xmlFile));
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
 			
 		  // Instantiate the remotes XBee devices
-			XBee64BitAddress node6Address = new XBee64BitAddress("0013A20040A2C795");
-			node6 = new RemoteDigiPointDevice(localXBee, node6Address);
-			digiPointNetwork.addRemoteDevice(node6);
-			
-			XBEEMAPPING.put("6", node6);
+			for (int i = 0; i < serials.size(); i++){
+				XBee64BitAddress nodeAddress = new XBee64BitAddress(serials.get(i).getSerialHigh()
+																  + serials.get(i).getSerialLow());
+				RemoteDigiPointDevice node = new RemoteDigiPointDevice(localXBee, nodeAddress);
+				digiPointNetwork.addRemoteDevice(node);
 			}
+		}
 
 	    // Selected jetSki
 		String selection = null;
@@ -101,14 +136,14 @@ public class Main extends Application {
 					e.printStackTrace();
 				}
 				
+				
 				if (digit == "A" && selection != null) {
-					final int nodeId = Integer.valueOf(selection);
-					if(XBEEMAPPING.containsKey(String.valueOf(nodeId))) {
+					final String s = selection;
 						Runnable t = new Runnable() {
-	
+							
 						public void run() {
 							try {
-								XBEEMAPPING.get(String.valueOf(nodeId)).setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
+									digiPointNetwork.getDevice(getXBeeAddress(s)).setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
 							} catch (TimeoutException e) {
 								e.printStackTrace();
 							} catch (XBeeException e) {
@@ -117,17 +152,26 @@ public class Main extends Application {
 						}
 						};
 						t.run();
-					}
 					selection = null;
 					
+				} else if (digit == "B") {
+					selection = null;
+					for(int i = 0; i < serials.size(); i++){
+						try {
+							digiPointNetwork.getDevice(serials.get(i).get16BitsAddress()).setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
+						} catch (TimeoutException e) {
+							e.printStackTrace();
+						} catch (XBeeException e) {
+							e.printStackTrace();
+						}
+					}
 				} else if (digit == "D" && selection != null) {
-					final int nodeId = Integer.valueOf(selection);
-					if(XBEEMAPPING.containsKey(String.valueOf(nodeId))) {
+					final String s = selection;
 						Runnable t = new Runnable() {
 	
 						public void run() {
 							try {
-								XBEEMAPPING.get(String.valueOf(nodeId)).setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
+								digiPointNetwork.getDevice(getXBeeAddress(s)).setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
 							} catch (TimeoutException e) {
 								e.printStackTrace();
 							} catch (XBeeException e) {
@@ -136,11 +180,19 @@ public class Main extends Application {
 						}
 						};
 						t.run();
-					}
 					selection = null;
 					
 				} else if (digit == "C") {
 					selection = null;
+					for(int i = 0; i < serials.size(); i++){
+						try {
+							digiPointNetwork.getDevice(serials.get(i).get16BitsAddress()).setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
+						} catch (TimeoutException e) {
+							e.printStackTrace();
+						} catch (XBeeException e) {
+							e.printStackTrace();
+						}
+					}
 				} else if(digit == "*") {
 					 selection = null;
 				} else if(digit == "#") {
@@ -161,6 +213,19 @@ public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		
+	}
+	
+	
+	private static String getXBeeAddress(String selection){
+		String address = null;
+		// 	Get XBeeAddress to selected key
+		for(int i = 0; i < serials.size();i++){
+			if(serials.get(i).getId().equals(selection)){
+				address = serials.get(i).getSerialHigh()+serials.get(i).getSerialLow();
+			}
+		}
+		final String xbeeAddress  = address;
+		return xbeeAddress;
 	}
 
 }
