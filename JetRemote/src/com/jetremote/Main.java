@@ -45,9 +45,6 @@ public class Main extends Application {
 	
 	private static ArrayList<ModuleRF> serials = null;
 	
-	
-	
-	
 
 	public static void main(String[] args) {
 		
