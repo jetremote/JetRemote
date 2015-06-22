@@ -98,7 +98,7 @@ public class Main extends Application {
 			digiPointNetwork = (DigiPointNetwork) localXBee.getNetwork();
 			
 			//Locate the file
-			File xmlFile = new File("/tmp/jetremote.xml");
+			File xmlFile = new File("/home/pi/jetremote.xml");
 			
 			//Create the parser instance
 			ModuleRFXmlParser parser = new ModuleRFXmlParser();
@@ -113,119 +113,118 @@ public class Main extends Application {
 			
 		  // Instantiate the remotes XBee devices
 			for (int i = 0; i < serials.size(); i++){
-				XBee64BitAddress nodeAddress = new XBee64BitAddress(serials.get(i).getSerialHigh()
-																  + serials.get(i).getSerialLow());
+				XBee64BitAddress nodeAddress = new XBee64BitAddress(serials.get(i).getSerialHigh());
 				RemoteDigiPointDevice node = new RemoteDigiPointDevice(localXBee, nodeAddress);
 				digiPointNetwork.addRemoteDevice(node);
 			}
 		}
 
-	    // Selected jetSki
-		String selection = null;
-		// Key pressed
-		String digit = null;
-		
-		while (digit != "none"){
-			digit = PINMAPPING.get(Keypad.getKey());
-			
-			if(digit!=null){
-				System.out.println(digit);
-				try {
-					Thread.sleep(200);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+		// Selected jetSki
+				String selection = null;
+				// Key pressed
+				String digit = null;
 				
-				
-				if (digit == "A" && selection != null) {
-					final String s = selection;
-						Runnable t = new Runnable() {
+				while (digit != "none"){
+					digit = PINMAPPING.get(Keypad.getKey());
+					
+					if(digit!=null){
+						System.out.println(digit);
+						try {
+							Thread.sleep(200);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+						
+						
+						if (digit == "A" && selection != null) {
+							final String s = selection;
+								Runnable t = new Runnable() {
+									
+								public void run() {
+									try {
+											digiPointNetwork.getDevice(getXBeeAddress(s)).setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
+									} catch (TimeoutException e) {
+										e.printStackTrace();
+									} catch (XBeeException e) {
+										e.printStackTrace();
+									}
+								}
+								};
+								t.run();
+							selection = null;
 							
-						public void run() {
-							try {
-									digiPointNetwork.getDevice(getXBeeAddress(s)).setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
-							} catch (TimeoutException e) {
-								e.printStackTrace();
-							} catch (XBeeException e) {
-								e.printStackTrace();
+						} else if (digit == "B") {
+							selection = null;
+							for(int i = 0; i < serials.size(); i++){
+								try {
+									digiPointNetwork.getDevice(serials.get(i).get16BitsAddress()).setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
+								} catch (TimeoutException e) {
+									e.printStackTrace();
+								} catch (XBeeException e) {
+									e.printStackTrace();
+								}
+							}
+						} else if (digit == "D" && selection != null) {
+							final String s = selection;
+								Runnable t = new Runnable() {
+			
+								public void run() {
+									try {
+										digiPointNetwork.getDevice(getXBeeAddress(s)).setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
+									} catch (TimeoutException e) {
+										e.printStackTrace();
+									} catch (XBeeException e) {
+										e.printStackTrace();
+									}
+								}
+								};
+								t.run();
+							selection = null;
+							
+						} else if (digit == "C") {
+							selection = null;
+							for(int i = 0; i < serials.size(); i++){
+								try {
+									digiPointNetwork.getDevice(serials.get(i).get16BitsAddress()).setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
+								} catch (TimeoutException e) {
+									e.printStackTrace();
+								} catch (XBeeException e) {
+									e.printStackTrace();
+								}
+							}
+						} else if(digit == "*") {
+							 selection = null;
+						} else if(digit == "#") {
+							selection = null;
+						} else if(!STRINGMAPPING.containsValue(digit)){
+							if(selection==null){
+								selection = digit;
+							} else {
+								selection = selection + digit;
 							}
 						}
-						};
-						t.run();
-					selection = null;
-					
-				} else if (digit == "B") {
-					selection = null;
-					for(int i = 0; i < serials.size(); i++){
-						try {
-							digiPointNetwork.getDevice(serials.get(i).get16BitsAddress()).setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
-						} catch (TimeoutException e) {
-							e.printStackTrace();
-						} catch (XBeeException e) {
-							e.printStackTrace();
-						}
-					}
-				} else if (digit == "D" && selection != null) {
-					final String s = selection;
-						Runnable t = new Runnable() {
-	
-						public void run() {
-							try {
-								digiPointNetwork.getDevice(getXBeeAddress(s)).setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
-							} catch (TimeoutException e) {
-								e.printStackTrace();
-							} catch (XBeeException e) {
-								e.printStackTrace();
-							}
-						}
-						};
-						t.run();
-					selection = null;
-					
-				} else if (digit == "C") {
-					selection = null;
-					for(int i = 0; i < serials.size(); i++){
-						try {
-							digiPointNetwork.getDevice(serials.get(i).get16BitsAddress()).setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
-						} catch (TimeoutException e) {
-							e.printStackTrace();
-						} catch (XBeeException e) {
-							e.printStackTrace();
-						}
-					}
-				} else if(digit == "*") {
-					 selection = null;
-				} else if(digit == "#") {
-					selection = null;
-				} else if(!STRINGMAPPING.containsValue(digit)){
-					if(selection==null){
-						selection = digit;
-					} else {
-						selection = selection + digit;
 					}
 				}
-			}
-		}
-		
-		launch(args);
-		}
+				
+				launch(args);
+				}
 
-	@Override
-	public void start(Stage primaryStage) throws Exception {
-		
-	}
-	
-	
-	private static String getXBeeAddress(String selection){
-		String address = null;
-		// 	Get XBeeAddress to selected key
-		for(int i = 0; i < serials.size();i++){
-			if(serials.get(i).getId().equals(selection)){
-				address = serials.get(i).getSerialHigh()+serials.get(i).getSerialLow();
+			@Override
+			public void start(Stage primaryStage) throws Exception {
+				
 			}
-		}
-		final String xbeeAddress  = address;
-		return xbeeAddress;
-	}
+			
+			
+			private static String getXBeeAddress(String selection){
+				String address = null;
+				// 	Get XBeeAddress to selected key
+				for(int i = 0; i < serials.size();i++){
+					if(serials.get(i).getId().equals(selection)){
+						address = serials.get(i).getSerialHigh()+serials.get(i).getSerialLow();
+					}
+				}
+				final String xbeeAddress  = address;
+				return xbeeAddress;
+			}
 
-}
+		}
