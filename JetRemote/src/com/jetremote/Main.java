@@ -26,11 +26,13 @@ import javafx.stage.Stage;
 import com.digi.xbee.api.DigiPointDevice;
 import com.digi.xbee.api.DigiPointNetwork;
 import com.digi.xbee.api.RemoteDigiPointDevice;
+import com.digi.xbee.api.RemoteXBeeDevice;
 import com.digi.xbee.api.exceptions.TimeoutException;
 import com.digi.xbee.api.exceptions.XBeeException;
 import com.digi.xbee.api.io.IOLine;
 import com.digi.xbee.api.io.IOValue;
 import com.digi.xbee.api.models.XBee64BitAddress;
+import com.digi.xbee.api.models.XBeeReceiveOptions;
 import com.jetremote.xml.ModuleRF;
 import com.jetremote.xml.ModuleRFXmlParser;
 
@@ -130,14 +132,13 @@ public class Main extends Application {
 				e.printStackTrace();
 			}
 			
-			
 			if (digit == "A" && selection != null) {
-				final String address = getXBeeAddress(selection);
+				final RemoteXBeeDevice node = getRemoteXbeeDevice(selection);
 					Runnable t = new Runnable() {
 						
 					public void run() {
 						try {
-							digiPointNetwork.getDevice(address).setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
+							node.setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
 						} catch (TimeoutException e) {
 							e.printStackTrace();
 						} catch (XBeeException e) {
@@ -160,12 +161,12 @@ public class Main extends Application {
 					}
 				}
 			} else if (digit == "D" && selection != null) {
-				final String address = getXBeeAddress(selection);
+				final RemoteXBeeDevice node = getRemoteXbeeDevice(selection);
 					Runnable t = new Runnable() {
 
 					public void run() {
 						try {
-							digiPointNetwork.getDevice(address).setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
+							node.setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
 						} catch (TimeoutException e) {
 							e.printStackTrace();
 						} catch (XBeeException e) {
@@ -204,13 +205,7 @@ public class Main extends Application {
 	launch(args);
 	}
 
-	@Override
-	public void start(Stage primaryStage) throws Exception {
-		
-	}
-	
-	
-	private static String getXBeeAddress(String selection){
+	private static RemoteXBeeDevice getRemoteXbeeDevice(String selection) {
 		String address = null;
 		// 	Get XBeeAddress to selected key
 		for(int i = 0; i < serials.size();i++){
@@ -218,7 +213,11 @@ public class Main extends Application {
 				address = serials.get(i).getSerialHigh()+serials.get(i).getSerialLow();
 			}
 		}
-		return address;
+		return digiPointNetwork.getDevice(address);
 	}
 
+	@Override
+	public void start(Stage primaryStage) throws Exception {
+		
+	}
 }
