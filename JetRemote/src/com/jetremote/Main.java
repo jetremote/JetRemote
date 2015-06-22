@@ -133,27 +133,32 @@ public class Main extends Application {
 			}
 			
 			if (digit == "A" && selection != null) {
-				final RemoteXBeeDevice node = getRemoteXbeeDevice(selection);
-					Runnable t = new Runnable() {
-						
-					public void run() {
-						try {
-							node.setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
-						} catch (TimeoutException e) {
-							e.printStackTrace();
-						} catch (XBeeException e) {
-							e.printStackTrace();
-						}
+				for(int i = 0; i < serials.size();i++){
+					if(serials.get(i).getId().equals(selection)){
+						final RemoteXBeeDevice node = getRemoteXbeeDevice(serials.get(i).getFullAddress());
+							Runnable t = new Runnable() {
+		
+							public void run() {
+								try {
+									node.setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
+								} catch (TimeoutException e) {
+									e.printStackTrace();
+								} catch (XBeeException e) {
+									e.printStackTrace();
+								}
+							}
+							};
+							t.run();
 					}
-					};
-					t.run();
+				}
 				selection = null;
 				
 			} else if (digit == "B") {
 				selection = null;
 				for(int i = 0; i < serials.size(); i++){
 					try {
-						digiPointNetwork.getDevice(serials.get(i).get16BitsAddress()).setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
+						final RemoteXBeeDevice node = getRemoteXbeeDevice(serials.get(i).getFullAddress());
+						node.setDIOValue(IOLine.DIO0_AD0, IOValue.LOW);
 					} catch (TimeoutException e) {
 						e.printStackTrace();
 					} catch (XBeeException e) {
@@ -161,27 +166,32 @@ public class Main extends Application {
 					}
 				}
 			} else if (digit == "D" && selection != null) {
-				final RemoteXBeeDevice node = getRemoteXbeeDevice(selection);
-					Runnable t = new Runnable() {
-
-					public void run() {
-						try {
-							node.setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
-						} catch (TimeoutException e) {
-							e.printStackTrace();
-						} catch (XBeeException e) {
-							e.printStackTrace();
-						}
+				for(int i = 0; i < serials.size();i++){
+					if(serials.get(i).getId().equals(selection)){
+						final RemoteXBeeDevice node = getRemoteXbeeDevice(serials.get(i).getFullAddress());
+							Runnable t = new Runnable() {
+		
+							public void run() {
+								try {
+									node.setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
+								} catch (TimeoutException e) {
+									e.printStackTrace();
+								} catch (XBeeException e) {
+									e.printStackTrace();
+								}
+							}
+							};
+							t.run();
 					}
-					};
-					t.run();
+				}
 				selection = null;
 				
 			} else if (digit == "C") {
 				selection = null;
 				for(int i = 0; i < serials.size(); i++){
 					try {
-						digiPointNetwork.getDevice(serials.get(i).get16BitsAddress()).setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
+						final RemoteXBeeDevice node = getRemoteXbeeDevice(serials.get(i).getFullAddress());
+						node.setDIOValue(IOLine.DIO0_AD0, IOValue.HIGH);
 					} catch (TimeoutException e) {
 						e.printStackTrace();
 					} catch (XBeeException e) {
@@ -205,15 +215,14 @@ public class Main extends Application {
 	launch(args);
 	}
 
-	private static RemoteXBeeDevice getRemoteXbeeDevice(String selection) {
-		String address = null;
-		// 	Get XBeeAddress to selected key
-		for(int i = 0; i < serials.size();i++){
-			if(serials.get(i).getId().equals(selection)){
-				address = serials.get(i).getSerialHigh()+serials.get(i).getSerialLow();
-			}
-		}
-		return digiPointNetwork.getDevice(address);
+	private static RemoteXBeeDevice getRemoteXbeeDevice(String s64BitAddress) {
+		XBee64BitAddress address = null;
+		RemoteXBeeDevice node = null;
+		// 	Get XBeeAddress by 64 bit address
+		address = new XBee64BitAddress(s64BitAddress);
+		node = digiPointNetwork.getDevice(address);
+		
+		return node;
 	}
 
 	@Override

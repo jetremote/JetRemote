@@ -44,7 +44,7 @@ public class ModuleRF
 	public void setSerialLow(String serialLow) {
 		this.serialLow = serialLow;
 	}
-	public String get16BitsAddress(){
+	public String getFullAddress(){
 		return serialHigh+serialLow;
 	}
 	
