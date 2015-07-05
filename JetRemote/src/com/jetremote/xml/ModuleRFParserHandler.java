@@ -98,7 +98,12 @@ public class ModuleRFParserHandler extends DefaultHandler
         {
             ModuleRF module = (ModuleRF) this.objectStack.peek();
             module.setSerialLow(value);
-        }
+        } 
+        else if ("model".equals(currentElement()))
+        {
+            ModuleRF module = (ModuleRF) this.objectStack.peek();
+            module.setModel(value);
+        } 
     }
     
     /**

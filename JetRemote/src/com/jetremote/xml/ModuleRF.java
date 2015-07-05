@@ -24,6 +24,8 @@ public class ModuleRF
 	private String serialHigh;
 	//XML element serialNumberLow
 	private String serialLow;
+	//XML element model
+	private String model;
 	
 	public String getId() {
 		return id;
@@ -47,8 +49,12 @@ public class ModuleRF
 	public String getFullAddress(){
 		return serialHigh+serialLow;
 	}
-	
-	
+	public String getModel() {
+		return model;
+	}
+	public void setModel(String model) {
+		this.model = model;
+	}
 	@Override
 	public String toString() {
 		return this.id + ":" + this.serialHigh + this.serialLow ;
